@@ -216,6 +216,9 @@ public class ItemSelectActivity extends Activity implements
 	public void onItemListDownloadException(Exception exception) {
 		exception.printStackTrace();
 		Toast.makeText(this, exception.getMessage(), Toast.LENGTH_LONG).show();
+		// TODO Offline mode
+		// TODO Load from cache if possible
+		finish();
 	}
 
 	@Override

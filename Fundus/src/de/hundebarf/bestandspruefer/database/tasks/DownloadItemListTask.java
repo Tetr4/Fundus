@@ -14,9 +14,11 @@ public class DownloadItemListTask extends AsyncTask<Void, Void, List<Item>> {
 	private ProgressDialog mProgDialog;
 	private OnItemListDownloadedCallback mCallback;
 	private DatabaseException mException;
+	private Context mContext;
 
 	public DownloadItemListTask(Context context,
 			OnItemListDownloadedCallback callback) {
+		mContext = context;
 		mCallback = callback;
 
 		mProgDialog = new ProgressDialog(context);
@@ -34,7 +36,7 @@ public class DownloadItemListTask extends AsyncTask<Void, Void, List<Item>> {
 	@Override
 	protected List<Item> doInBackground(Void... v) {
 		try {
-			DatabaseHelper dbHelper = new DatabaseHelper();
+			DatabaseHelper dbHelper = new DatabaseHelper(mContext);
 			return dbHelper.queryItemList();
 		} catch (DatabaseException e) {
 			mException = e;

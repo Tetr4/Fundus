@@ -13,9 +13,11 @@ public class UpdateQuantityTask extends AsyncTask<Integer, Void, Void> {
 	private DatabaseException mException;
 	private int mQuantity;
 	private int mId;
+	private Context mContext;
 
 	public UpdateQuantityTask(Context context,
 			OnQuantityUpdatedCallback callback) {
+		mContext = context;
 		mCallback = callback;
 
 		mProgDialog = new ProgressDialog(context);
@@ -36,7 +38,7 @@ public class UpdateQuantityTask extends AsyncTask<Integer, Void, Void> {
 		mId = idAndQuantity[0];
 		mQuantity = idAndQuantity[1];
 		try {
-			DatabaseHelper dbHelper = new DatabaseHelper();
+			DatabaseHelper dbHelper = new DatabaseHelper(mContext);
 			dbHelper.updateQuantity(mId, mQuantity);
 		} catch (DatabaseException e) {
 			mException = e;

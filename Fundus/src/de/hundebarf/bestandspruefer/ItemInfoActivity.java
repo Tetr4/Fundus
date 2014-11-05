@@ -141,6 +141,8 @@ public class ItemInfoActivity extends Activity implements OnItemInfoDownloadedCa
 	public void onItemInfoDownloadException(Exception exception) {
 		exception.printStackTrace();
 		Toast.makeText(ItemInfoActivity.this, exception.getMessage(), Toast.LENGTH_LONG).show();
+		// TODO Offline mode
+		// TODO Load from cache if possible
 		finish();
 	}
 
