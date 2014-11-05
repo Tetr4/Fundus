@@ -1,0 +1,26 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="AppTheme" parent="android:Theme.Holo.Light">
+        <item name="android:actionBarStyle">@style/FundusActionBar</item>
+        <item name="android:divider">@color/green</item>
+        <item name="android:textColorHighlight">@color/green</item>
+        <item name="android:textSelectHandleLeft">@drawable/text_select_handle_left</item>
+		<item name="android:textSelectHandleRight">@drawable/text_select_handle_right</item>
+		<item name="android:textSelectHandle">@drawable/text_select_handle_middle</item>
+        <item name="android:editTextBackground">@drawable/edit_text_underline</item>
+    </style>
+    
+    <style name="FundusActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">@drawable/action_bar</item>
+    </style>
+    
+ 	<style name="ItemAttributeTitle" parent="android:Widget.Holo.Light.TextView">
+		<item name="android:textStyle">bold</item>
+		<item name="android:textColor">?android:attr/textColorSecondary</item>
+		<item name="android:textSize">14sp</item>
+		<item name="android:gravity">center_vertical</item>
+		<item name="android:paddingLeft">8dip</item>
+		<item name="android:textAllCaps">true</item> 
+	</style>
+	
+</resources>

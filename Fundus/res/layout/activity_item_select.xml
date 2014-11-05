@@ -1,0 +1,68 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@color/activity_background"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    tools:context="de.hundebarf.bestandspruefer.ItemSelectActivity"
+    tools:ignore="MergeRootFrame" >
+
+    <fragment
+        android:id="@+id/scanner_fragment"
+        android:name="de.hundebarf.bestandspruefer.scanner.ScannerFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@android:color/holo_orange_light"
+        tools:ignore="Suspicious0dp" />
+
+    <!-- Divider -->
+    <!--
+         <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_gravity="bottom"
+        android:background="@android:color/darker_gray" />
+    -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <SearchView
+                android:id="@+id/search_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1"
+                android:focusable="false"
+                android:iconifiedByDefault="false"
+                android:queryHint="@string/searchview_query_hint" />
+
+            <ImageButton
+                android:id="@+id/scanner_button"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/camera_button"
+                android:contentDescription="@string/camera_button"
+                android:scaleType="centerCrop" />
+        </LinearLayout>
+
+        <ExpandableListView
+            android:id="@+id/expandable_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
+</LinearLayout>
