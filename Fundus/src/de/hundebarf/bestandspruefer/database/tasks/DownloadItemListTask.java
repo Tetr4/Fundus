@@ -2,62 +2,36 @@ package de.hundebarf.bestandspruefer.database.tasks;
 
 import java.util.List;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
-import de.hundebarf.bestandspruefer.R;
 import de.hundebarf.bestandspruefer.collection.Item;
 import de.hundebarf.bestandspruefer.database.DatabaseException;
 import de.hundebarf.bestandspruefer.database.DatabaseHelper;
+import de.hundebarf.bestandspruefer.database.tasks.DownloadItemListTask.OnItemListDownloadedCallback;
 
-public class DownloadItemListTask extends AsyncTask<Void, Void, List<Item>> {
-	private ProgressDialog mProgDialog;
-	private OnItemListDownloadedCallback mCallback;
-	private DatabaseException mException;
-	private Context mContext;
+public class DownloadItemListTask extends
+		ProgressDialogTask<Void, List<Item>, OnItemListDownloadedCallback> {
 
 	public DownloadItemListTask(Context context,
 			OnItemListDownloadedCallback callback) {
-		mContext = context;
-		mCallback = callback;
-
-		mProgDialog = new ProgressDialog(context);
-		mProgDialog.setMessage(context.getResources().getString(
-				R.string.query_info));
-		mProgDialog.setIndeterminate(false);
-		mProgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		mProgDialog.setCancelable(false);
-	}
-
-	protected void onPreExecute() {
-		mProgDialog.show();
+		super(context, callback);
 	}
 
 	@Override
-	protected List<Item> doInBackground(Void... v) {
-		try {
-			DatabaseHelper dbHelper = new DatabaseHelper(mContext);
-			return dbHelper.queryItemList();
-		} catch (DatabaseException e) {
-			mException = e;
-			return null;
-		}
+	protected List<Item> getResult(DatabaseHelper dbHelper, Void... v)
+			throws DatabaseException {
+		return dbHelper.queryItemList();
 	}
 
-	protected void onPostExecute(List<Item> items) {
-		dismissProgressDialog();
-
-		if (mException != null) {
-			mCallback.onItemListDownloadException(mException);
-		} else {
-			mCallback.onItemListDownloaded(items);
-		}
+	@Override
+	protected void onSuccess(OnItemListDownloadedCallback callback,
+			List<Item> result) {
+		callback.onItemListDownloaded(result);
 	}
 
-	public void dismissProgressDialog() {
-		if (mProgDialog.isShowing()) {
-			mProgDialog.dismiss();
-		}
+	@Override
+	protected void onException(OnItemListDownloadedCallback callback,
+			DatabaseException exception) {
+		callback.onItemListDownloadException(exception);
 	}
 
 	public interface OnItemListDownloadedCallback {

@@ -34,22 +34,29 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 import de.hundebarf.bestandspruefer.collection.Item;
 
 public class DatabaseHelper {
 	private static final String TAG = DatabaseHelper.class.getSimpleName();
 	private DefaultHttpClient mClient;
-	private String mServiceURL;
-	// private String mLastKnownServiceURL = "http://192.168.178.17/bestand/";
-	private String mLastKnownServiceURL = "http://192.168.1.118/bestand/";
-	private static final String SERVICE_URI = "bestand";
-	private static final int CONNECTION_TIMEOUT = 6000;
-	private Context mContext;
 	private CredentialsProvider mCredsProvider;
+	
+	private String mLastKnownServiceURL;
+//	private String mLastKnownServiceURL = "http://192.168.178.17/bestand/";
+//	private String mLastKnownServiceURL = "http://192.168.1.118/bestand/";
+	private static final String LAST_KNOWN_URL_PREFERENCE = "LAST_KNOWN_URL_PREFERENCE";
+	private static final String SERVICE_URI = "bestand";
+	private static final int CONNECTION_TIMEOUT = 8000;
+	
+	private Context mContext;
+	private SharedPreferences mPreferences;
 
 	public DatabaseHelper(Context context) {
 		this(context, "Fundus", "1111");
@@ -70,10 +77,9 @@ public class DatabaseHelper {
 
 		mClient = new DefaultHttpClient(httpParams);
 		mClient.setCredentialsProvider(mCredsProvider);
-	}
-
-	public void setLastKnownServiceIP(String ip) {
-		mLastKnownServiceURL = "http://" + ip + "/" + SERVICE_URI + "/";
+		
+		mPreferences = context.getSharedPreferences(LAST_KNOWN_URL_PREFERENCE, Context.MODE_PRIVATE);
+		mLastKnownServiceURL = mPreferences.getString(LAST_KNOWN_URL_PREFERENCE, null);
 	}
 
 	public List<Item> queryItemList() throws DatabaseException {
@@ -249,6 +255,7 @@ public class DatabaseHelper {
 		return items;
 	}
 
+	@SuppressLint("DefaultLocale")
 	private String getServiceURL() {
 		if (mContext != null) {
 			ConnectivityManager connManager = (ConnectivityManager) mContext
@@ -262,28 +269,33 @@ public class DatabaseHelper {
 			}
 		}
 
-		if (mServiceURL != null) {
-			return mServiceURL;
-		}
-
 		if (mLastKnownServiceURL != null) {
 			HttpHead head = new HttpHead(mLastKnownServiceURL);
 			try {
 				HttpResponse response = mClient.execute(head);
 				int statuscode = response.getStatusLine().getStatusCode();
 				if (statuscode == 200) { // OK
-					mServiceURL = mLastKnownServiceURL;
-					return mServiceURL;
+					Log.i(TAG, "Last known Service URL is valid.");
+					return mLastKnownServiceURL;
 				}
 			} catch (IOException e) {
 				// Not a valid Service URL
 			}
 		}
 
-		// FIXME
-		String localIp = "192.168.178.7";
-		localIp = localIp.substring(0, localIp.lastIndexOf("."));
-		localIp += ".";
+		// get local ip adress
+		String ipAddress = "192.168.178.";
+		if(mContext != null) {
+			WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+			int ipInt = wifiManager.getConnectionInfo().getIpAddress();
+			ipAddress = String.format("%d.%d.%d.%d", (ipInt & 0xff), (ipInt >> 8 & 0xff),
+			        (ipInt >> 16 & 0xff), (ipInt >> 24 & 0xff));
+			Log.i(TAG, "IP: " + ipAddress);
+			ipAddress = ipAddress.substring(0, ipAddress.lastIndexOf("."));
+			ipAddress += ".";
+		} else {
+			return null;
+		}
 
 		// parallel requests to ip range
 		// e.g. "192.168.0.0" to "192.168.0.254"
@@ -293,9 +305,13 @@ public class DatabaseHelper {
 				executor);
 		List<Future<String>> futures = new ArrayList<Future<String>>(255);
 		try {
+			// free memory for threads
+			System.gc();
+			System.runFinalization();
+			System.gc();
 			// create callables
 			for (int i = 0; i < 255; i++) {
-				String curURL = "http://" + localIp + i + "/" + SERVICE_URI;
+				String curURL = "http://" + ipAddress + i + "/" + SERVICE_URI + "/";
 				CheckConnection checkConnection = new CheckConnection(curURL);
 				futures.add(complService.submit(checkConnection));
 			}
@@ -305,9 +321,10 @@ public class DatabaseHelper {
 				try {
 					String possibleResult = complService.take().get();
 					if (possibleResult != null) {
-						mServiceURL = possibleResult;
-						Log.i(TAG, "Found WebService at: " + mServiceURL);
-						return mServiceURL;
+						mLastKnownServiceURL = possibleResult;
+						mPreferences.edit().putString(LAST_KNOWN_URL_PREFERENCE, mLastKnownServiceURL).commit();
+						Log.i(TAG, "Found WebService at: " + mLastKnownServiceURL);
+						return mLastKnownServiceURL;
 					}
 				} catch (ExecutionException e) {
 					// Ignore
@@ -320,6 +337,7 @@ public class DatabaseHelper {
 				curFuture.cancel(true);
 		}
 
+		Log.i(TAG, "Could not find Webservice");
 		return null;
 	}
 

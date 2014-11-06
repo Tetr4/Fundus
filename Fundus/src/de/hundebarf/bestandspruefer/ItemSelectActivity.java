@@ -133,12 +133,19 @@ public class ItemSelectActivity extends Activity implements
 			}
 		});
 	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		mDownloadListTask.onResume();
+	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		mDownloadListTask.dismissProgressDialog();
+		mDownloadListTask.onPause();
 	}
+	
 
 	private void expandAllCategories() {
 		mExpandableListView.smoothScrollToPosition(0);

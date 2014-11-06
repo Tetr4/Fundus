@@ -124,11 +124,17 @@ public class ItemInfoActivity extends Activity implements OnItemInfoDownloadedCa
 	}
 	
 	@Override
+	protected void onResume() {
+		super.onResume();
+		mDownloadInfoTask.onResume();
+	}
+	
+	@Override
 	protected void onPause() {
 		if(mQuantityDialog != null) {
 			mQuantityDialog.dismiss();
 		}
-		mDownloadInfoTask.dismissProgressDialog();
+		mDownloadInfoTask.onPause();
 		super.onPause();
 	}
 

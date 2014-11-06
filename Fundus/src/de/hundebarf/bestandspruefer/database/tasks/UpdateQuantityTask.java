@@ -1,65 +1,38 @@
 package de.hundebarf.bestandspruefer.database.tasks;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
-import de.hundebarf.bestandspruefer.R;
 import de.hundebarf.bestandspruefer.database.DatabaseException;
 import de.hundebarf.bestandspruefer.database.DatabaseHelper;
+import de.hundebarf.bestandspruefer.database.tasks.UpdateQuantityTask.OnQuantityUpdatedCallback;
 
-public class UpdateQuantityTask extends AsyncTask<Integer, Void, Void> {
-	private ProgressDialog mProgDialog;
-	private OnQuantityUpdatedCallback mCallback;
-	private DatabaseException mException;
-	private int mQuantity;
+public class UpdateQuantityTask extends
+		ProgressDialogTask<Integer, Void, OnQuantityUpdatedCallback> {
 	private int mId;
-	private Context mContext;
+	private int mQuantity;
 
 	public UpdateQuantityTask(Context context,
 			OnQuantityUpdatedCallback callback) {
-		mContext = context;
-		mCallback = callback;
-
-		mProgDialog = new ProgressDialog(context);
-		mProgDialog.setMessage(context.getResources().getString(
-				R.string.query_info));
-		mProgDialog.setIndeterminate(false);
-		mProgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		mProgDialog.setCancelable(false);
-		mProgDialog.show();
-	}
-
-	protected void onPreExecute() {
-		mProgDialog.show();
+		super(context, callback);
 	}
 
 	@Override
-	protected Void doInBackground(Integer... idAndQuantity) {
+	protected Void getResult(DatabaseHelper dbHelper, Integer... idAndQuantity)
+			throws DatabaseException {
 		mId = idAndQuantity[0];
 		mQuantity = idAndQuantity[1];
-		try {
-			DatabaseHelper dbHelper = new DatabaseHelper(mContext);
-			dbHelper.updateQuantity(mId, mQuantity);
-		} catch (DatabaseException e) {
-			mException = e;
-		}
+		dbHelper.updateQuantity(mId, mQuantity);
 		return null;
 	}
 
-	protected void onPostExecute(Void v) {
-		dismissProgressDialog();
-
-		if (mException != null) {
-			mCallback.onQuantityUpdateException(mException);
-		} else {
-			mCallback.onQuantityUpdated(mQuantity);
-		}
+	@Override
+	protected void onSuccess(OnQuantityUpdatedCallback callback, Void v) {
+		callback.onQuantityUpdated(mQuantity);
 	}
 
-	public void dismissProgressDialog() {
-		if (mProgDialog.isShowing()) {
-			mProgDialog.dismiss();
-		}
+	@Override
+	protected void onException(OnQuantityUpdatedCallback callback,
+			DatabaseException exception) {
+		callback.onQuantityUpdateException(exception);
 	}
 
 	public interface OnQuantityUpdatedCallback {
@@ -67,5 +40,4 @@ public class UpdateQuantityTask extends AsyncTask<Integer, Void, Void> {
 
 		void onQuantityUpdateException(Exception exception);
 	}
-
 }

@@ -26,7 +26,6 @@ public class ScannerFragment extends Fragment implements AnimationListener {
 
 	private FrameLayout mScannerPanel;
 	private ScannerView mScannerView;
-	private TargetReticle mTargetReticle;
 	private Camera mCamera;
 	private int mCameraId;
 	private CameraInfo mCameraInfo;
@@ -82,8 +81,6 @@ public class ScannerFragment extends Fragment implements AnimationListener {
 				false);
 		mScannerPanel = (FrameLayout) rootView.findViewById(R.id.scanner_panel);
 		mScannerView = (ScannerView) rootView.findViewById(R.id.scanner_view);
-		mTargetReticle = (TargetReticle) rootView
-				.findViewById(R.id.target_reticle);
 
 		initPanelAnimations();
 
