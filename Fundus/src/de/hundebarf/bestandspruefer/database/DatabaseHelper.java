@@ -19,6 +19,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -47,14 +48,14 @@ public class DatabaseHelper {
 	private static final String TAG = DatabaseHelper.class.getSimpleName();
 	private DefaultHttpClient mClient;
 	private CredentialsProvider mCredsProvider;
-	
+
 	private String mLastKnownServiceURL;
-//	private String mLastKnownServiceURL = "http://192.168.178.17/bestand/";
-//	private String mLastKnownServiceURL = "http://192.168.1.118/bestand/";
+	// private String mLastKnownServiceURL = "http://192.168.178.17/bestand/";
+	// private String mLastKnownServiceURL = "http://192.168.1.118/bestand/";
 	private static final String LAST_KNOWN_URL_PREFERENCE = "LAST_KNOWN_URL_PREFERENCE";
 	private static final String SERVICE_URI = "bestand";
 	private static final int CONNECTION_TIMEOUT = 8000;
-	
+
 	private Context mContext;
 	private SharedPreferences mPreferences;
 
@@ -77,9 +78,11 @@ public class DatabaseHelper {
 
 		mClient = new DefaultHttpClient(httpParams);
 		mClient.setCredentialsProvider(mCredsProvider);
-		
-		mPreferences = context.getSharedPreferences(LAST_KNOWN_URL_PREFERENCE, Context.MODE_PRIVATE);
-		mLastKnownServiceURL = mPreferences.getString(LAST_KNOWN_URL_PREFERENCE, null);
+
+		mPreferences = context.getSharedPreferences(LAST_KNOWN_URL_PREFERENCE,
+				Context.MODE_PRIVATE);
+		mLastKnownServiceURL = mPreferences.getString(
+				LAST_KNOWN_URL_PREFERENCE, null);
 	}
 
 	public List<Item> queryItemList() throws DatabaseException {
@@ -106,8 +109,12 @@ public class DatabaseHelper {
 				throw new DatabaseException(statusMessage);
 			}
 
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());
+		} catch (IOException e) {
+			throw new DatabaseException(e);
+		} catch (IllegalStateException e) {
+			throw new DatabaseException(e);
+		} catch (JSONException e) {
+			throw new DatabaseException(e);
 		} finally {
 			if (response != null) {
 				try {
@@ -141,9 +148,12 @@ public class DatabaseHelper {
 				throw new DatabaseException(statusMessage);
 			}
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new DatabaseException(e);
-
+		} catch (IllegalStateException e) {
+			throw new DatabaseException(e);
+		} catch (JSONException e) {
+			throw new DatabaseException(e);
 		} finally {
 			if (response != null) {
 				try {
@@ -164,14 +174,14 @@ public class DatabaseHelper {
 		}
 
 		HttpPut put = new HttpPut(serviceURL + itemId);
-
+		HttpResponse response = null;
 		try {
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("quantity", Integer
 					.toString(quantity)));
 			put.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
-			HttpResponse response = mClient.execute(put);
+			response = mClient.execute(put);
 
 			int statuscode = response.getStatusLine().getStatusCode();
 			switch (statuscode) {
@@ -187,6 +197,16 @@ public class DatabaseHelper {
 
 		} catch (IOException e) {
 			throw new DatabaseException(e);
+		} catch (IllegalStateException e) {
+			throw new DatabaseException(e);
+		} finally {
+			if (response != null) {
+				try {
+					response.getEntity().consumeContent();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 
 	}
@@ -285,11 +305,13 @@ public class DatabaseHelper {
 
 		// get local ip adress
 		String ipAddress = "192.168.178.";
-		if(mContext != null) {
-			WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+		if (mContext != null) {
+			WifiManager wifiManager = (WifiManager) mContext
+					.getSystemService(Context.WIFI_SERVICE);
 			int ipInt = wifiManager.getConnectionInfo().getIpAddress();
-			ipAddress = String.format("%d.%d.%d.%d", (ipInt & 0xff), (ipInt >> 8 & 0xff),
-			        (ipInt >> 16 & 0xff), (ipInt >> 24 & 0xff));
+			ipAddress = String.format("%d.%d.%d.%d", (ipInt & 0xff),
+					(ipInt >> 8 & 0xff), (ipInt >> 16 & 0xff),
+					(ipInt >> 24 & 0xff));
 			Log.i(TAG, "IP: " + ipAddress);
 			ipAddress = ipAddress.substring(0, ipAddress.lastIndexOf("."));
 			ipAddress += ".";
@@ -299,7 +321,7 @@ public class DatabaseHelper {
 
 		// parallel requests to ip range
 		// e.g. "192.168.0.0" to "192.168.0.254"
-		// TODO 255 threads too much?
+		// TODO 255 threads too much? maybe broadcast
 		ExecutorService executor = Executors.newFixedThreadPool(255);
 		CompletionService<String> complService = new ExecutorCompletionService<String>(
 				executor);
@@ -311,7 +333,8 @@ public class DatabaseHelper {
 			System.gc();
 			// create callables
 			for (int i = 0; i < 255; i++) {
-				String curURL = "http://" + ipAddress + i + "/" + SERVICE_URI + "/";
+				String curURL = "http://" + ipAddress + i + "/" + SERVICE_URI
+						+ "/";
 				CheckConnection checkConnection = new CheckConnection(curURL);
 				futures.add(complService.submit(checkConnection));
 			}
@@ -322,8 +345,12 @@ public class DatabaseHelper {
 					String possibleResult = complService.take().get();
 					if (possibleResult != null) {
 						mLastKnownServiceURL = possibleResult;
-						mPreferences.edit().putString(LAST_KNOWN_URL_PREFERENCE, mLastKnownServiceURL).commit();
-						Log.i(TAG, "Found WebService at: " + mLastKnownServiceURL);
+						mPreferences
+								.edit()
+								.putString(LAST_KNOWN_URL_PREFERENCE,
+										mLastKnownServiceURL).commit();
+						Log.i(TAG, "Found WebService at: "
+								+ mLastKnownServiceURL);
 						return mLastKnownServiceURL;
 					}
 				} catch (ExecutionException e) {
