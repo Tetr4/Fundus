@@ -19,7 +19,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -86,12 +85,7 @@ public class DatabaseHelper {
 	}
 
 	public List<Item> queryItemList() throws DatabaseException {
-		String serviceURL = getServiceURL();
-		if (serviceURL == null) {
-			throw new DatabaseException("Webservice not found");
-		}
-
-		HttpGet get = new HttpGet(serviceURL);
+		HttpGet get = new HttpGet(getServiceURL());
 
 		HttpResponse response = null;
 		try {
@@ -110,11 +104,11 @@ public class DatabaseHelper {
 			}
 
 		} catch (IOException e) {
-			throw new DatabaseException(e);
+			throw new DatabaseException(e.getMessage());
 		} catch (IllegalStateException e) {
-			throw new DatabaseException(e);
+			throw new DatabaseException(e.getMessage());
 		} catch (JSONException e) {
-			throw new DatabaseException(e);
+			throw new DatabaseException(e.getMessage());
 		} finally {
 			if (response != null) {
 				try {
@@ -127,12 +121,7 @@ public class DatabaseHelper {
 	}
 
 	public Item queryItem(int itemId) throws DatabaseException {
-		String serviceURL = getServiceURL();
-		if (serviceURL == null) {
-			throw new DatabaseException("Webservice not found");
-		}
-
-		HttpGet get = new HttpGet(serviceURL + itemId);
+		HttpGet get = new HttpGet(getServiceURL() + itemId);
 		HttpResponse response = null;
 		try {
 			response = mClient.execute(get);
@@ -147,13 +136,12 @@ public class DatabaseHelper {
 						.getReasonPhrase();
 				throw new DatabaseException(statusMessage);
 			}
-
 		} catch (IOException e) {
-			throw new DatabaseException(e);
+			throw new DatabaseException(e.getMessage());
 		} catch (IllegalStateException e) {
-			throw new DatabaseException(e);
+			throw new DatabaseException(e.getMessage());
 		} catch (JSONException e) {
-			throw new DatabaseException(e);
+			throw new DatabaseException(e.getMessage());
 		} finally {
 			if (response != null) {
 				try {
@@ -168,12 +156,8 @@ public class DatabaseHelper {
 
 	public void updateQuantity(int itemId, int quantity)
 			throws DatabaseException {
-		String serviceURL = getServiceURL();
-		if (serviceURL == null) {
-			throw new DatabaseException("Webservice not found");
-		}
+		HttpPut put = new HttpPut(getServiceURL() + itemId);
 
-		HttpPut put = new HttpPut(serviceURL + itemId);
 		HttpResponse response = null;
 		try {
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
@@ -196,9 +180,9 @@ public class DatabaseHelper {
 			}
 
 		} catch (IOException e) {
-			throw new DatabaseException(e);
+			throw new DatabaseException(e.getMessage());
 		} catch (IllegalStateException e) {
-			throw new DatabaseException(e);
+			throw new DatabaseException(e.getMessage());
 		} finally {
 			if (response != null) {
 				try {
@@ -276,17 +260,14 @@ public class DatabaseHelper {
 	}
 
 	@SuppressLint("DefaultLocale")
-	private String getServiceURL() {
-		if (mContext != null) {
-			ConnectivityManager connManager = (ConnectivityManager) mContext
-					.getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo wifi = connManager
-					.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-			if (!wifi.isConnected()) {
-				// connection to service requires local network
-				Log.i(TAG, "Wifi not connected");
-				return null;
-			}
+	private String getServiceURL() throws DatabaseException {
+		ConnectivityManager connManager = (ConnectivityManager) mContext
+				.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo wifi = connManager
+				.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		if (!wifi.isConnected()) {
+			// connection to service requires local network
+			throw new DatabaseException("Wifi not connected");
 		}
 
 		if (mLastKnownServiceURL != null) {
@@ -299,25 +280,21 @@ public class DatabaseHelper {
 					return mLastKnownServiceURL;
 				}
 			} catch (IOException e) {
-				// Not a valid Service URL
+				// Not a valid Service URL -> continue
 			}
 		}
 
 		// get local ip adress
 		String ipAddress = "192.168.178.";
-		if (mContext != null) {
-			WifiManager wifiManager = (WifiManager) mContext
-					.getSystemService(Context.WIFI_SERVICE);
-			int ipInt = wifiManager.getConnectionInfo().getIpAddress();
-			ipAddress = String.format("%d.%d.%d.%d", (ipInt & 0xff),
-					(ipInt >> 8 & 0xff), (ipInt >> 16 & 0xff),
-					(ipInt >> 24 & 0xff));
-			Log.i(TAG, "IP: " + ipAddress);
-			ipAddress = ipAddress.substring(0, ipAddress.lastIndexOf("."));
-			ipAddress += ".";
-		} else {
-			return null;
-		}
+		WifiManager wifiManager = (WifiManager) mContext
+				.getSystemService(Context.WIFI_SERVICE);
+		int ipInt = wifiManager.getConnectionInfo().getIpAddress();
+		ipAddress = String
+				.format("%d.%d.%d.%d", (ipInt & 0xff), (ipInt >> 8 & 0xff),
+						(ipInt >> 16 & 0xff), (ipInt >> 24 & 0xff));
+		Log.i(TAG, "IP: " + ipAddress);
+		ipAddress = ipAddress.substring(0, ipAddress.lastIndexOf("."));
+		ipAddress += ".";
 
 		// parallel requests to ip range
 		// e.g. "192.168.0.0" to "192.168.0.254"
@@ -364,8 +341,7 @@ public class DatabaseHelper {
 				curFuture.cancel(true);
 		}
 
-		Log.i(TAG, "Could not find Webservice");
-		return null;
+		throw new DatabaseException("Could not find Webservice");
 	}
 
 	private class CheckConnection implements Callable<String> {
