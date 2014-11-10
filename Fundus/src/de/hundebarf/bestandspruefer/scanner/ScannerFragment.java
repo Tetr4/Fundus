@@ -1,6 +1,7 @@
 package de.hundebarf.bestandspruefer.scanner;
 
 import android.app.Fragment;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
@@ -41,26 +42,38 @@ public class ScannerFragment extends Fragment implements AnimationListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mCameraId = findBestCamera();
-		mCameraInfo = new CameraInfo();
-		Camera.getCameraInfo(mCameraId, mCameraInfo);
-
+		initCamera();
 		mDecoder = new Decoder(getActivity());
 	}
 
-	private static int findBestCamera() {
-		// TODO find cameraID for best camera with focus
-		int cameraId = 0;
-		// CameraInfo cameraInfo = new CameraInfo();
-		// getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS);
-		// CameraInfo cameraInfo = new CameraInfo();
-		// for (int curCameraId = 0; curCameraId < Camera.getNumberOfCameras();
-		// curCameraId++) {
-		// Camera.getCameraInfo(curCameraId, cameraInfo);
-		// if (cameraInfo.facing == CameraInfo.CAMERA_FACING_BACK) {
-		// }
-		// }
-		return cameraId;
+	private void initCamera() {
+		mCameraInfo = new CameraInfo();
+
+		/*
+		 * Barcodes will be blurry and thus unreadably on the back camera,
+		 * should the device not support autofocus (e.g. Samsung Galaxy Tab 2
+		 * 7.0). In that case we use the front camera which usually has a closer
+		 * focus.
+		 */
+		PackageManager packageManager = getActivity().getPackageManager();
+		boolean hasAutoFocus = packageManager
+				.hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS);
+		boolean hasFrontCamera = packageManager
+				.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT);
+		if (!hasAutoFocus && hasFrontCamera) {
+			for (int curCameraId = 0; curCameraId < Camera.getNumberOfCameras(); curCameraId++) {
+				Camera.getCameraInfo(curCameraId, mCameraInfo);
+				if (mCameraInfo.facing == CameraInfo.CAMERA_FACING_FRONT) {
+					// use front camera
+					mCameraId = curCameraId;
+					return;
+				}
+			}
+		}
+
+		// default: use back camera;
+		mCameraId = 0;
+		Camera.getCameraInfo(mCameraId, mCameraInfo);
 	}
 
 	private void initPanelAnimations() {
@@ -142,10 +155,12 @@ public class ScannerFragment extends Fragment implements AnimationListener {
 				} catch (RuntimeException e) {
 					return e;
 				}
-				// set params
+				// optimize params
 				Parameters params = mCamera.getParameters();
-				params.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-				params.setFlashMode(Parameters.FLASH_MODE_OFF);
+				if (params.getSupportedFocusModes().contains(
+						Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+					params.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+				}
 				params.setRecordingHint(true);
 				mCamera.setParameters(params);
 				return null;
