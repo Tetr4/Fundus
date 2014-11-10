@@ -53,10 +53,6 @@ public class ItemSelectActivity extends Activity implements
 
 		initExpandableListView();
 		initSearchView();
-		// download item list. Calls onItemListDownloaded(List<Item> items).
-		mDownloadListTask = new DownloadItemListTask(this, this);
-		mDownloadListTask.execute();
-
 		initScanner();
 	}
 
@@ -79,6 +75,10 @@ public class ItemSelectActivity extends Activity implements
 				return true;
 			}
 		});
+		
+		// download item list. Calls onItemListDownloaded(List<Item> items).
+		mDownloadListTask = new DownloadItemListTask(this, this);
+		mDownloadListTask.execute();
 	}
 
 	private void initSearchView() {
