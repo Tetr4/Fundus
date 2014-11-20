@@ -1,5 +1,4 @@
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.hundebarf.bestandspruefer"
     android:versionCode="1"
     android:versionName="1.0" >
@@ -7,15 +6,35 @@
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="19" />
-    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <!-- barcode scanner uses camera -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- connection to database uses internet -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.FLASHLIGHT"/>
-    
-    <uses-feature android:name="android.hardware.wifi"/>
-    <uses-feature android:name="android.hardware.camera" android:required="true" />
-	<uses-feature android:name="android.hardware.camera.front" android:required="false" />
+    <!-- check if in hundebarf wifi network -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- use flashlight while scanning -->
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+
+    <uses-feature 
+        android:name="android.hardware.wifi"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.flash"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -29,16 +48,17 @@
             android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".ItemInfoActivity"
-            android:parentActivityName=".ItemSelectActivity"/>
+            android:parentActivityName=".ItemSelectActivity" />
         <activity
             android:name=".ItemAddActivity"
             android:label="@string/title_activity_add"
-            android:parentActivityName=".ItemSelectActivity"/>
+            android:parentActivityName=".ItemSelectActivity" />
     </application>
 
 </manifest>
