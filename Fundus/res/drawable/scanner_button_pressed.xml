@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <!-- just a slightly smaller than normal version -->
+    <item
+        android:drawable="@drawable/scanner_button_normal"
+        android:bottom="3dp"
+        android:left="3dp"
+        android:right="3dp"/>
+
+</layer-list>

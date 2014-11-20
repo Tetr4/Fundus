@@ -101,7 +101,7 @@
                     android:layout_gravity="center"
                     android:layout_marginBottom="@dimen/add_edit_text_margin_bottom"
                     android:layout_marginTop="@dimen/add_edit_text_margin_top"
-                    android:background="@drawable/camera_button" />
+                    android:background="@drawable/scanner_button" />
             </LinearLayout>
 
             <!-- menge(inhalt) einheit(inhalt) -->
@@ -244,7 +244,7 @@
             android:layout_height="@dimen/round_button_diameter"
             android:layout_gravity="center"
             android:layout_margin="@dimen/round_button_margin"
-            android:background="@drawable/round_button"
+            android:background="@drawable/bottom_bar_button"
             android:src="@drawable/ic_add"
             android:contentDescription="@string/add_button"/>
     </FrameLayout>

@@ -14,5 +14,8 @@
     <color name="green">#9fcd46</color>
     
     <color name="activity_background">#eeede4</color>
-
+    
+    <color name="scanner_frame_border">#DDDDDD</color>
+    <color name="scanner_frame">#AAAAAA</color>
+    
 </resources>

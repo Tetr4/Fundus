@@ -190,7 +190,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:scaleType="center"
-                    android:background="@drawable/round_button"
+                    android:background="@drawable/bottom_bar_button"
                     android:src="@drawable/ic_action_edit"
                     android:contentDescription="@string/edit_quantity_button_content"/>
             </RelativeLayout>

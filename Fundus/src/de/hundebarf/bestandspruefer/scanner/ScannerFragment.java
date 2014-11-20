@@ -29,17 +29,21 @@ public class ScannerFragment extends Fragment {
 
 	private FrameLayout mScannerPanel;
 	private ScannerView mScannerView;
+	private TargetReticle mTargetReticle;
+	
 	private Camera mCamera;
 	private int mCameraId;
 	private CameraInfo mCameraInfo;
-
 	private AsyncTask<Void, Void, Exception> mStartCameraTask;
 
-	private boolean mExpanded = false;
+	private Decoder mDecoder;
+	
 	private PanelAnimation mCollapseAnimation;
 	private PanelAnimation mExpandAnimation;
+	private int mScannerHeightExpanded;
+	private int mScannerHeightCollapsed;
+	private boolean mExpanded = false;
 
-	private Decoder mDecoder;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -48,9 +52,24 @@ public class ScannerFragment extends Fragment {
 		mDecoder = new Decoder(getActivity());
 	}
 
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		View rootView = inflater.inflate(R.layout.fragment_scanner, container,
+				false);
+		
+		mScannerPanel = (FrameLayout) rootView.findViewById(R.id.scanner_panel);
+		mScannerView = (ScannerView) rootView.findViewById(R.id.scanner_view);
+		mTargetReticle = (TargetReticle) rootView.findViewById(R.id.target_reticle);
+
+		initPanelAnimations();
+
+		return rootView;
+	}
+
 	private void initCamera() {
 		mCameraInfo = new CameraInfo();
-
+	
 		/*
 		 * Barcodes will be blurry and thus unreadably on the back camera,
 		 * should the device not support autofocus (e.g. Samsung Galaxy Tab 2
@@ -63,76 +82,65 @@ public class ScannerFragment extends Fragment {
 		boolean hasFrontCamera = packageManager
 				.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT);
 		if (!hasAutoFocus && hasFrontCamera) {
+			// use front camera
 			for (int curCameraId = 0; curCameraId < Camera.getNumberOfCameras(); curCameraId++) {
 				Camera.getCameraInfo(curCameraId, mCameraInfo);
 				if (mCameraInfo.facing == CameraInfo.CAMERA_FACING_FRONT) {
-					// use front camera
 					mCameraId = curCameraId;
 					return;
 				}
 			}
 		}
-
-		// default: use back camera;
+	
+		// use default camera;
 		mCameraId = 0;
 		Camera.getCameraInfo(mCameraId, mCameraInfo);
 	}
 
 	private void initPanelAnimations() {
-		int scannerHeight = (int) getResources().getDimension(
-				R.dimen.scanner_height);
+		mScannerHeightExpanded = (int) getResources().getDimension(
+				R.dimen.scanner_height_expanded);
+		mScannerHeightCollapsed = (int) getResources().getDimension(
+				R.dimen.scanner_height_collapsed);
 		
-		mExpandAnimation = new PanelAnimation(mScannerPanel, 0, scannerHeight);
+		mExpandAnimation = new PanelAnimation(mScannerPanel, mScannerHeightCollapsed, mScannerHeightExpanded);
 		mExpandAnimation.setDuration(200);
 		mExpandAnimation.setAnimationListener(new AnimationListener() {
 			@Override
 			public void onAnimationStart(Animation animation) {
 				startCamera();
 			}
-
+	
 			@Override
 			public void onAnimationRepeat(Animation animation) {
-
+	
 			}
-
+	
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				mExpanded = true;
 			}
 		});
 		
-		mCollapseAnimation = new PanelAnimation(mScannerPanel, scannerHeight, 0);
+		mCollapseAnimation = new PanelAnimation(mScannerPanel, mScannerHeightExpanded, mScannerHeightCollapsed);
 		mCollapseAnimation.setDuration(200);
 		mCollapseAnimation.setAnimationListener(new AnimationListener() {
 			public void onAnimationStart(Animation animation) {
-
+	
 			}
-
+	
 			@Override
 			public void onAnimationRepeat(Animation animation) {
-
+	
 			}
-
+	
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				stopCamera();
 				mExpanded = false;
 			}
-
+	
 		});
-	}
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fragment_scanner, container,
-				false);
-		mScannerPanel = (FrameLayout) rootView.findViewById(R.id.scanner_panel);
-		mScannerView = (ScannerView) rootView.findViewById(R.id.scanner_view);
-
-		initPanelAnimations();
-
-		return rootView;
 	}
 
 	@Override
@@ -144,11 +152,7 @@ public class ScannerFragment extends Fragment {
 	public void onPause() {
 		super.onPause();
 		stopCamera();
-
-		// collapse panel without animation
-		LayoutParams lp = mScannerPanel.getLayoutParams();
-		lp.height = 0;
-		mExpanded = false;
+		collapseNoAnim();
 	}
 
 	private void startCamera() {
@@ -173,10 +177,7 @@ public class ScannerFragment extends Fragment {
 					Log.w(TAG,
 							"Exception while opening camera: " + e.getMessage());
 					mCamera = null;
-					// collapse panel without animation
-					LayoutParams lp = mScannerPanel.getLayoutParams();
-					lp.height = 0;
-					mExpanded = false;
+					collapseNoAnim();
 					return;
 				}
 				Display display = getActivity().getWindowManager()
@@ -187,6 +188,8 @@ public class ScannerFragment extends Fragment {
 				mScannerView.setCamera(mCamera);
 				mCamera.startPreview();
 				mDecoder.startDecoding(mCamera, displayOrientation);
+				mScannerView.setVisibility(View.VISIBLE);
+				mTargetReticle.setVisibility(View.VISIBLE);
 			}
 		}.execute();
 	}
@@ -202,6 +205,8 @@ public class ScannerFragment extends Fragment {
 			mCamera.release();
 			mCamera = null;
 		}
+		mScannerView.setVisibility(View.INVISIBLE);
+		mTargetReticle.setVisibility(View.INVISIBLE);
 	}
 
 	private static void optimizeCameraParams(Camera camera) {
@@ -249,16 +254,26 @@ public class ScannerFragment extends Fragment {
 
 	public void expand() {
 		if (!isExpanded()) {
-			// calls startCamera() in onAnimationStart();
+			// calls startCamera() when starting
 			mScannerPanel.startAnimation(mExpandAnimation);
 		}
 	}
 
 	public void collapse() {
 		if (isExpanded()) {
-			// calls stopCamera() in onAnimationStop();
+			// calls stopCamera() when finished
 			mScannerPanel.startAnimation(mCollapseAnimation);
 		}
+	}
+	
+	private void collapseNoAnim() {
+		// collapse panel instantaneously
+		LayoutParams lp = mScannerPanel.getLayoutParams();
+		lp.height = mScannerHeightCollapsed;
+		mExpanded = false;
+		// FIXME
+		mScannerView.setVisibility(View.INVISIBLE);
+		mTargetReticle.setVisibility(View.INVISIBLE);
 	}
 
 	public boolean isExpanded() {

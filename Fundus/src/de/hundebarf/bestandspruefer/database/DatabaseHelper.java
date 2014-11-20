@@ -59,7 +59,7 @@ public class DatabaseHelper {
 	private SharedPreferences mPreferences;
 
 	public DatabaseHelper(Context context) {
-		this(context, "Fundus", "1111");
+		this(context, "Fundus", "1234");
 	}
 
 	public DatabaseHelper(Context context, String user, String pass) {

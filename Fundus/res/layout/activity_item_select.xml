@@ -14,24 +14,14 @@
         android:id="@+id/scanner_fragment"
         android:name="de.hundebarf.bestandspruefer.scanner.ScannerFragment"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@android:color/holo_orange_light"
-        tools:ignore="Suspicious0dp" />
-
-    <!-- Divider -->
-    <!--
-         <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_gravity="bottom"
-        android:background="@android:color/darker_gray" />
-    -->
+        android:layout_height="@dimen/scanner_height_collapsed"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
+        android:layout_marginTop="@dimen/scanner_border_minus"
         android:orientation="vertical" >
 
         <LinearLayout
@@ -54,7 +44,7 @@
                 android:id="@+id/scanner_button"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
-                android:background="@drawable/camera_button"
+                android:background="@drawable/scanner_button"
                 android:contentDescription="@string/camera_button"
                 android:scaleType="centerCrop" />
         </LinearLayout>
