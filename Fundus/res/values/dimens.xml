@@ -19,7 +19,8 @@
     <dimen name="scanner_height_collapsed">10dp</dimen>
     <dimen name="scanner_border">6dp</dimen>
     <dimen name="scanner_border_minus">-6.5dp</dimen>
-    <dimen name="scanner_border_radius">16dp</dimen>
+    <dimen name="scanner_border_radius">15dp</dimen>
+    <dimen name="scanner_border_radius_outer">18dp</dimen>
     <dimen name="scanner_icon_margin">16dp</dimen>
 
 </resources>

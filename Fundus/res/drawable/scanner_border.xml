@@ -11,8 +11,8 @@
             </stroke>
 
             <corners
-                android:bottomLeftRadius="@dimen/scanner_border_radius"
-                android:bottomRightRadius="@dimen/scanner_border_radius" />
+                android:bottomLeftRadius="@dimen/scanner_border_radius_outer"
+                android:bottomRightRadius="@dimen/scanner_border_radius_outer" />
         </shape>
     </item>
 
