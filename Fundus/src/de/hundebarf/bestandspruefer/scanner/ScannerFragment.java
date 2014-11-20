@@ -1,5 +1,7 @@
 package de.hundebarf.bestandspruefer.scanner;
 
+import java.util.List;
+
 import android.app.Fragment;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
@@ -20,7 +22,7 @@ import android.widget.FrameLayout;
 import de.hundebarf.bestandspruefer.R;
 import de.hundebarf.bestandspruefer.scanner.Decoder.OnDecodedCallback;
 
-public class ScannerFragment extends Fragment implements AnimationListener {
+public class ScannerFragment extends Fragment {
 	static final double BOUNDS_FRACTION = 0.6; //
 	static final double VERTICAL_HEIGHT_FRACTION = 0.3;
 	private static final String TAG = ScannerFragment.class.getSimpleName();
@@ -79,12 +81,45 @@ public class ScannerFragment extends Fragment implements AnimationListener {
 	private void initPanelAnimations() {
 		int scannerHeight = (int) getResources().getDimension(
 				R.dimen.scanner_height);
+		
 		mExpandAnimation = new PanelAnimation(mScannerPanel, 0, scannerHeight);
 		mExpandAnimation.setDuration(200);
-		mExpandAnimation.setAnimationListener(this);
+		mExpandAnimation.setAnimationListener(new AnimationListener() {
+			@Override
+			public void onAnimationStart(Animation animation) {
+				startCamera();
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+
+			}
+
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				mExpanded = true;
+			}
+		});
+		
 		mCollapseAnimation = new PanelAnimation(mScannerPanel, scannerHeight, 0);
 		mCollapseAnimation.setDuration(200);
-		mCollapseAnimation.setAnimationListener(this);
+		mCollapseAnimation.setAnimationListener(new AnimationListener() {
+			public void onAnimationStart(Animation animation) {
+
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+
+			}
+
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				stopCamera();
+				mExpanded = false;
+			}
+
+		});
 	}
 
 	@Override
@@ -116,34 +151,6 @@ public class ScannerFragment extends Fragment implements AnimationListener {
 		mExpanded = false;
 	}
 
-	private static int getCameraDisplayOrientation(Display display,
-			CameraInfo cameraInfo) {
-		int rotation = display.getRotation();
-		int degrees = 0;
-		switch (rotation) {
-		case Surface.ROTATION_0:
-			degrees = 0;
-			break;
-		case Surface.ROTATION_90:
-			degrees = 90;
-			break;
-		case Surface.ROTATION_180:
-			degrees = 180;
-			break;
-		case Surface.ROTATION_270:
-			degrees = 270;
-			break;
-		}
-		int result;
-		if (cameraInfo.facing == CameraInfo.CAMERA_FACING_FRONT) {
-			result = (cameraInfo.orientation + degrees) % 360;
-			result = (360 - result) % 360; // compensate the mirror
-		} else { // back-facing
-			result = (cameraInfo.orientation - degrees + 360) % 360;
-		}
-		return result;
-	}
-
 	private void startCamera() {
 		// Task for smooth UI while camera loads
 		mStartCameraTask = new AsyncTask<Void, Void, Exception>() {
@@ -156,13 +163,7 @@ public class ScannerFragment extends Fragment implements AnimationListener {
 					return e;
 				}
 				// optimize params
-				Parameters params = mCamera.getParameters();
-				if (params.getSupportedFocusModes().contains(
-						Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
-					params.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-				}
-				params.setRecordingHint(true);
-				mCamera.setParameters(params);
+				optimizeCameraParams(mCamera);
 				return null;
 			}
 
@@ -203,6 +204,49 @@ public class ScannerFragment extends Fragment implements AnimationListener {
 		}
 	}
 
+	private static void optimizeCameraParams(Camera camera) {
+		Parameters params = camera.getParameters();
+		List<String> focusModes = params.getSupportedFocusModes();
+		if (focusModes.contains(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+			params.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+		}
+		List<String> flashModes = params.getSupportedFlashModes();
+		if (flashModes != null
+				&& flashModes.contains(Parameters.FLASH_MODE_TORCH)) {
+			params.setFlashMode(Parameters.FLASH_MODE_TORCH);
+		}
+		params.setRecordingHint(true);
+		camera.setParameters(params);
+	}
+
+	private static int getCameraDisplayOrientation(Display display,
+			CameraInfo cameraInfo) {
+		int rotation = display.getRotation();
+		int degrees = 0;
+		switch (rotation) {
+		case Surface.ROTATION_0:
+			degrees = 0;
+			break;
+		case Surface.ROTATION_90:
+			degrees = 90;
+			break;
+		case Surface.ROTATION_180:
+			degrees = 180;
+			break;
+		case Surface.ROTATION_270:
+			degrees = 270;
+			break;
+		}
+		int result;
+		if (cameraInfo.facing == CameraInfo.CAMERA_FACING_FRONT) {
+			result = (cameraInfo.orientation + degrees) % 360;
+			result = (360 - result) % 360; // compensate the mirror
+		} else { // back-facing
+			result = (cameraInfo.orientation - degrees + 360) % 360;
+		}
+		return result;
+	}
+
 	public void expand() {
 		if (!isExpanded()) {
 			// calls startCamera() in onAnimationStart();
@@ -223,28 +267,6 @@ public class ScannerFragment extends Fragment implements AnimationListener {
 
 	public void setOnDecodedCallback(OnDecodedCallback callback) {
 		mDecoder.setOnDecodedCallback(callback);
-	}
-
-	@Override
-	public void onAnimationStart(Animation animation) {
-		if (animation == mExpandAnimation) {
-			startCamera();
-		}
-	}
-
-	@Override
-	public void onAnimationRepeat(Animation animation) {
-
-	}
-
-	@Override
-	public void onAnimationEnd(Animation animation) {
-		if (animation == mCollapseAnimation) {
-			stopCamera();
-			mExpanded = false;
-		} else if (animation == mExpandAnimation) {
-			mExpanded = true;
-		}
 	}
 
 }
