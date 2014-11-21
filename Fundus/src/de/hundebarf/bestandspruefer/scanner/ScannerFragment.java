@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.app.Fragment;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
@@ -30,20 +31,19 @@ public class ScannerFragment extends Fragment {
 	private FrameLayout mScannerPanel;
 	private ScannerView mScannerView;
 	private TargetReticle mTargetReticle;
-	
+
 	private Camera mCamera;
 	private int mCameraId;
 	private CameraInfo mCameraInfo;
 	private AsyncTask<Void, Void, Exception> mStartCameraTask;
 
 	private Decoder mDecoder;
-	
+
 	private PanelAnimation mCollapseAnimation;
 	private PanelAnimation mExpandAnimation;
 	private int mScannerHeightExpanded;
 	private int mScannerHeightCollapsed;
 	private boolean mExpanded = false;
-
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -57,10 +57,11 @@ public class ScannerFragment extends Fragment {
 			Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_scanner, container,
 				false);
-		
+
 		mScannerPanel = (FrameLayout) rootView.findViewById(R.id.scanner_panel);
 		mScannerView = (ScannerView) rootView.findViewById(R.id.scanner_view);
-		mTargetReticle = (TargetReticle) rootView.findViewById(R.id.target_reticle);
+		mTargetReticle = (TargetReticle) rootView
+				.findViewById(R.id.target_reticle);
 
 		initPanelAnimations();
 
@@ -69,7 +70,7 @@ public class ScannerFragment extends Fragment {
 
 	private void initCamera() {
 		mCameraInfo = new CameraInfo();
-	
+
 		/*
 		 * Barcodes will be blurry and thus unreadably on the back camera,
 		 * should the device not support autofocus (e.g. Samsung Galaxy Tab 2
@@ -91,7 +92,7 @@ public class ScannerFragment extends Fragment {
 				}
 			}
 		}
-	
+
 		// use default camera;
 		mCameraId = 0;
 		Camera.getCameraInfo(mCameraId, mCameraInfo);
@@ -102,44 +103,46 @@ public class ScannerFragment extends Fragment {
 				R.dimen.scanner_height_expanded);
 		mScannerHeightCollapsed = (int) getResources().getDimension(
 				R.dimen.scanner_height_collapsed);
-		
-		mExpandAnimation = new PanelAnimation(mScannerPanel, mScannerHeightCollapsed, mScannerHeightExpanded);
+
+		mExpandAnimation = new PanelAnimation(mScannerPanel,
+				mScannerHeightCollapsed, mScannerHeightExpanded);
 		mExpandAnimation.setDuration(200);
 		mExpandAnimation.setAnimationListener(new AnimationListener() {
 			@Override
 			public void onAnimationStart(Animation animation) {
 				startCameraAsync();
 			}
-	
+
 			@Override
 			public void onAnimationRepeat(Animation animation) {
-	
+
 			}
-	
+
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				mExpanded = true;
 			}
 		});
-		
-		mCollapseAnimation = new PanelAnimation(mScannerPanel, mScannerHeightExpanded, mScannerHeightCollapsed);
+
+		mCollapseAnimation = new PanelAnimation(mScannerPanel,
+				mScannerHeightExpanded, mScannerHeightCollapsed);
 		mCollapseAnimation.setDuration(200);
 		mCollapseAnimation.setAnimationListener(new AnimationListener() {
 			public void onAnimationStart(Animation animation) {
-	
+
 			}
-	
+
 			@Override
 			public void onAnimationRepeat(Animation animation) {
-	
+
 			}
-	
+
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				stopCamera();
 				mExpanded = false;
 			}
-	
+
 		});
 	}
 
@@ -153,6 +156,21 @@ public class ScannerFragment extends Fragment {
 		super.onPause();
 		stopCamera();
 		collapseNoAnim();
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		// called when display is rotated
+		if (mCamera != null) {
+			Display display = getActivity().getWindowManager()
+					.getDefaultDisplay();
+			int displayOrientation = getCameraDisplayOrientation(display,
+					mCameraInfo);
+			mCamera.setDisplayOrientation(displayOrientation);
+			mScannerView.requestLayout();
+			mDecoder.stopDecoding(mCamera);
+			mDecoder.startDecoding(mCamera, displayOrientation);
+		}
 	}
 
 	private void startCameraAsync() {
@@ -200,8 +218,8 @@ public class ScannerFragment extends Fragment {
 		}
 		if (mCamera != null) {
 			mDecoder.stopDecoding(mCamera);
-			mCamera.stopPreview();
 			mScannerView.setCamera(null);
+			mCamera.stopPreview();
 			mCamera.release();
 			mCamera = null;
 		}
@@ -265,13 +283,12 @@ public class ScannerFragment extends Fragment {
 			mScannerPanel.startAnimation(mCollapseAnimation);
 		}
 	}
-	
+
 	private void collapseNoAnim() {
 		// collapse panel instantaneously
 		LayoutParams lp = mScannerPanel.getLayoutParams();
 		lp.height = mScannerHeightCollapsed;
 		mExpanded = false;
-		// FIXME
 		mScannerView.setVisibility(View.INVISIBLE);
 		mTargetReticle.setVisibility(View.INVISIBLE);
 	}
