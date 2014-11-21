@@ -1,5 +1,6 @@
 package de.hundebarf.bestandspruefer.database;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.hundebarf.bestandspruefer.collection.Item;
@@ -13,13 +14,19 @@ public class CacheConnection implements DatabaseConnection {
 	@Override
 	public List<Item> queryItemList() throws DatabaseException {
 		// TODO Auto-generated method stub
-		return null;
+		ArrayList<Item> list = new ArrayList<Item>();
+		Item item = new Item(0, "test Item", "bla", "1234");
+		list.add(item);
+		return list;
 	}
 
 	@Override
 	public Item queryItem(int itemId) throws DatabaseException {
 		// TODO Auto-generated method stub
-		return null;
+		Item item = new Item(0, "test Item", "bla", "1234");
+		item.description = "null";
+		return item;
+
 	}
 
 	@Override

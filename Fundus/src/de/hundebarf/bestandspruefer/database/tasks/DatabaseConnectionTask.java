@@ -27,10 +27,10 @@ public abstract class DatabaseConnectionTask<Result> extends
 	protected void onPostExecute(Result result) {
 		super.onPostExecute(result);
 
-		if (result != null) {
-			onSuccess(result);
-		} else {
+		if (mException != null) {
 			onFailure(mException);
+		} else {
+			onSuccess(result);
 		}
 
 	}

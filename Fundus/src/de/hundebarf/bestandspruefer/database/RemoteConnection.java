@@ -86,12 +86,6 @@ public class RemoteConnection implements DatabaseConnection {
 
 	@Override
 	public List<Item> queryItemList() throws DatabaseException {
-		try {
-			Thread.sleep(4000);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 		HttpGet get = new HttpGet(getServiceURL());
 
 		HttpResponse response = null;
