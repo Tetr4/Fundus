@@ -25,13 +25,13 @@ import android.widget.SearchView.OnQueryTextListener;
 import android.widget.Toast;
 import de.hundebarf.bestandspruefer.collection.Category;
 import de.hundebarf.bestandspruefer.collection.Item;
-import de.hundebarf.bestandspruefer.database.tasks.DownloadItemListTask;
-import de.hundebarf.bestandspruefer.database.tasks.DownloadItemListTask.OnItemListDownloadedCallback;
+import de.hundebarf.bestandspruefer.database.DatabaseConnection;
+import de.hundebarf.bestandspruefer.database.DatabaseException;
+import de.hundebarf.bestandspruefer.database.tasks.CachedDatabaseConnectionTask;
 import de.hundebarf.bestandspruefer.scanner.Decoder.OnDecodedCallback;
 import de.hundebarf.bestandspruefer.scanner.ScannerFragment;
 
-public class ItemSelectActivity extends Activity implements
-		OnItemListDownloadedCallback, OnDecodedCallback {
+public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 	public static final String TAG = ItemSelectActivity.class.getSimpleName();
 
 	// Barcode Scanner
@@ -44,7 +44,11 @@ public class ItemSelectActivity extends Activity implements
 	private ExpandableItemListAdapter mListAdapter;
 	private List<Category> mCategories = new ArrayList<Category>();
 	private Map<String, Integer> mBarcodeToID = new HashMap<String, Integer>();
-	private DownloadItemListTask mDownloadListTask;
+
+	// data loader
+	private CachedDatabaseConnectionTask<List<Item>> mListTask;
+	private boolean mGotRemoteData;
+	private boolean mGotData;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,7 @@ public class ItemSelectActivity extends Activity implements
 		setContentView(R.layout.activity_item_select);
 
 		initExpandableListView();
+		loadItemsAsync();
 		initSearchView();
 		initScanner();
 	}
@@ -75,10 +80,35 @@ public class ItemSelectActivity extends Activity implements
 				return true;
 			}
 		});
-		
-		// download item list. Calls onItemListDownloaded(List<Item> items).
-		mDownloadListTask = new DownloadItemListTask(this, this);
-		mDownloadListTask.execute();
+	}
+
+	private void loadItemsAsync() {
+		mListTask = new CachedDatabaseConnectionTask<List<Item>>(this) {
+			@Override
+			protected void onFinishedReceiving() {
+				if (!mGotData) {
+					showFailureLoadingData();
+				}
+				if (!mGotRemoteData) {
+					showOfflineMode();
+				}
+			}
+
+			@Override
+			protected void onDataReceived(List<Item> items, boolean fromCache) {
+				mGotData = true;
+				if (fromCache) {
+					mGotRemoteData = true;
+				}
+				fillList(items);
+			}
+
+			@Override
+			protected List<Item> executeQuery(DatabaseConnection connection)
+					throws DatabaseException {
+				return connection.queryItemList();
+			}
+		};
 	}
 
 	private void initSearchView() {
@@ -119,7 +149,7 @@ public class ItemSelectActivity extends Activity implements
 		mScannerButton = (ImageButton) findViewById(R.id.scanner_button);
 		mScannerFragment = (ScannerFragment) getFragmentManager()
 				.findFragmentById(R.id.scanner_fragment);
-		
+
 		mScannerFragment.setOnDecodedCallback(this);
 
 		mScannerButton.setOnClickListener(new OnClickListener() {
@@ -133,54 +163,20 @@ public class ItemSelectActivity extends Activity implements
 			}
 		});
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
-		mDownloadListTask.onResume();
+		mListTask.onResume();
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		mDownloadListTask.onPause();
-	}
-	
-
-	private void expandAllCategories() {
-		mExpandableListView.smoothScrollToPosition(0);
-		int groupCount = mListAdapter.getGroupCount();
-		for (int curGroupNr = 0; curGroupNr < groupCount; curGroupNr++) {
-			mExpandableListView.expandGroup(curGroupNr);
-		}
+		mListTask.onPause();
 	}
 
-	private void collapseAllCategories() {
-		int groupCount = mListAdapter.getGroupCount();
-		for (int curGroupNr = 0; curGroupNr < groupCount; curGroupNr++) {
-			mExpandableListView.collapseGroup(curGroupNr);
-		}
-	}
-
-	@Override
-	public void onDecoded(String decodedData) {
-		if (mBarcodeToID.containsKey(decodedData)) {
-			// barcode recognized -> start ItemInfoActivity
-			int id = mBarcodeToID.get(decodedData);
-			Intent intent = new Intent(this, ItemInfoActivity.class);
-			intent.putExtra(ItemInfoActivity.ITEM_ID, id);
-			startActivity(intent);
-		} else {
-			// show not recognized toast
-			String notRecognizedMessage = getResources().getString(
-					R.string.not_recognized_info);
-			Toast.makeText(ItemSelectActivity.this, notRecognizedMessage,
-					Toast.LENGTH_SHORT).show();
-		}
-	}
-
-	@Override
-	public void onItemListDownloaded(List<Item> items) {
+	private void fillList(List<Item> items) {
 		// associate items with categories and barcodes with ids
 		// HashSet/-Map for fast collision checking
 		String[] disabledCategoriesArray = getResources().getStringArray(
@@ -219,13 +215,50 @@ public class ItemSelectActivity extends Activity implements
 		mListAdapter.notifyDataSetChanged();
 	}
 
+	private void showOfflineMode() {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void showFailureLoadingData() {
+		// e.printStackTrace();
+		// Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+		// finish();
+		// FIXME
+		Toast.makeText(this, "Keine Daten erhältlich", Toast.LENGTH_LONG)
+				.show();
+	}
+
+	private void expandAllCategories() {
+		mExpandableListView.smoothScrollToPosition(0);
+		int groupCount = mListAdapter.getGroupCount();
+		for (int curGroupNr = 0; curGroupNr < groupCount; curGroupNr++) {
+			mExpandableListView.expandGroup(curGroupNr);
+		}
+	}
+
+	private void collapseAllCategories() {
+		int groupCount = mListAdapter.getGroupCount();
+		for (int curGroupNr = 0; curGroupNr < groupCount; curGroupNr++) {
+			mExpandableListView.collapseGroup(curGroupNr);
+		}
+	}
+
 	@Override
-	public void onItemListDownloadException(Exception exception) {
-		exception.printStackTrace();
-		Toast.makeText(this, exception.getMessage(), Toast.LENGTH_LONG).show();
-		// TODO Offline mode
-		// TODO Load from cache if possible
-		finish();
+	public void onDecoded(String decodedData) {
+		if (mBarcodeToID.containsKey(decodedData)) {
+			// barcode recognized -> start ItemInfoActivity
+			int id = mBarcodeToID.get(decodedData);
+			Intent intent = new Intent(this, ItemInfoActivity.class);
+			intent.putExtra(ItemInfoActivity.ITEM_ID, id);
+			startActivity(intent);
+		} else {
+			// show not recognized toast
+			String notRecognizedMessage = getResources().getString(
+					R.string.not_recognized_info);
+			Toast.makeText(ItemSelectActivity.this, notRecognizedMessage,
+					Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	@Override

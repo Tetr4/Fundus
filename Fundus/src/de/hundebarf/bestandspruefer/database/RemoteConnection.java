@@ -43,8 +43,8 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 import de.hundebarf.bestandspruefer.collection.Item;
 
-public class DatabaseHelper {
-	private static final String TAG = DatabaseHelper.class.getSimpleName();
+public class RemoteConnection implements DatabaseConnection {
+	private static final String TAG = RemoteConnection.class.getSimpleName();
 	private DefaultHttpClient mClient;
 	private CredentialsProvider mCredsProvider;
 
@@ -58,11 +58,11 @@ public class DatabaseHelper {
 	private Context mContext;
 	private SharedPreferences mPreferences;
 
-	public DatabaseHelper(Context context) {
+	public RemoteConnection(Context context) {
 		this(context, "Fundus", "1234");
 	}
 
-	public DatabaseHelper(Context context, String user, String pass) {
+	public RemoteConnection(Context context, String user, String pass) {
 		mContext = context;
 
 		mCredsProvider = new BasicCredentialsProvider();
@@ -84,7 +84,14 @@ public class DatabaseHelper {
 				LAST_KNOWN_URL_PREFERENCE, null);
 	}
 
+	@Override
 	public List<Item> queryItemList() throws DatabaseException {
+		try {
+			Thread.sleep(4000);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		HttpGet get = new HttpGet(getServiceURL());
 
 		HttpResponse response = null;
@@ -120,6 +127,7 @@ public class DatabaseHelper {
 		}
 	}
 
+	@Override
 	public Item queryItem(int itemId) throws DatabaseException {
 		HttpGet get = new HttpGet(getServiceURL() + itemId);
 		HttpResponse response = null;
@@ -154,6 +162,7 @@ public class DatabaseHelper {
 
 	}
 
+	@Override
 	public void updateQuantity(int itemId, int quantity)
 			throws DatabaseException {
 		HttpPut put = new HttpPut(getServiceURL() + itemId);
@@ -195,6 +204,7 @@ public class DatabaseHelper {
 
 	}
 
+	@Override
 	public void addItem(Item item) throws DatabaseException {
 		// TODO implement
 	}
