@@ -87,7 +87,7 @@ public class Decoder implements Camera.PreviewCallback {
 	}
 
 	public void onDecodeFail() {
-		Log.i(Decoder.TAG, "Decode fail.");
+//		Log.i(Decoder.TAG, "Decode fail.");
 		if (mDecoding) {
 			// request next frame
 			mDelayTimer
