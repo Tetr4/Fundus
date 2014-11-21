@@ -45,15 +45,14 @@ import de.hundebarf.bestandspruefer.collection.Item;
 
 public class RemoteConnection implements DatabaseConnection {
 	private static final String TAG = RemoteConnection.class.getSimpleName();
-	private DefaultHttpClient mClient;
-	private CredentialsProvider mCredsProvider;
 
-	private String mLastKnownServiceURL;
-	// private String mLastKnownServiceURL = "http://192.168.178.17/bestand/";
-	// private String mLastKnownServiceURL = "http://192.168.1.118/bestand/";
 	private static final String LAST_KNOWN_URL_PREFERENCE = "LAST_KNOWN_URL_PREFERENCE";
 	private static final String SERVICE_URI = "bestand";
 	private static final int CONNECTION_TIMEOUT = 8000;
+	private String mLastKnownServiceURL;
+
+	private DefaultHttpClient mClient;
+	private CredentialsProvider mCredsProvider;
 
 	private Context mContext;
 	private SharedPreferences mPreferences;
@@ -65,19 +64,20 @@ public class RemoteConnection implements DatabaseConnection {
 	public RemoteConnection(Context context, String user, String pass) {
 		mContext = context;
 
+		// httpclient with timeout
+		final HttpParams httpParams = new BasicHttpParams();
+		HttpConnectionParams.setConnectionTimeout(httpParams,
+				CONNECTION_TIMEOUT);
+		mClient = new DefaultHttpClient(httpParams);
+
+		// / credentials
 		mCredsProvider = new BasicCredentialsProvider();
 		mCredsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST,
 				AuthScope.ANY_PORT),
 				new UsernamePasswordCredentials(user, pass));
-
-		// timeout
-		final HttpParams httpParams = new BasicHttpParams();
-		HttpConnectionParams.setConnectionTimeout(httpParams,
-				CONNECTION_TIMEOUT);
-
-		mClient = new DefaultHttpClient(httpParams);
 		mClient.setCredentialsProvider(mCredsProvider);
 
+		// last known service url
 		mPreferences = context.getSharedPreferences(LAST_KNOWN_URL_PREFERENCE,
 				Context.MODE_PRIVATE);
 		mLastKnownServiceURL = mPreferences.getString(
@@ -91,13 +91,11 @@ public class RemoteConnection implements DatabaseConnection {
 		HttpResponse response = null;
 		try {
 			response = mClient.execute(get);
-
 			int statuscode = response.getStatusLine().getStatusCode();
 			switch (statuscode) {
 			case 200: // OK
 				JSONObject json = parseJsonFromHttpResponse(response);
 				return parseItemListFromJson(json);
-
 			default:
 				String statusMessage = response.getStatusLine()
 						.getReasonPhrase();
@@ -124,6 +122,7 @@ public class RemoteConnection implements DatabaseConnection {
 	@Override
 	public Item queryItem(int itemId) throws DatabaseException {
 		HttpGet get = new HttpGet(getServiceURL() + itemId);
+
 		HttpResponse response = null;
 		try {
 			response = mClient.execute(get);
@@ -138,6 +137,7 @@ public class RemoteConnection implements DatabaseConnection {
 						.getReasonPhrase();
 				throw new DatabaseException(statusMessage);
 			}
+
 		} catch (IOException e) {
 			throw new DatabaseException(e.getMessage());
 		} catch (IllegalStateException e) {
@@ -153,29 +153,25 @@ public class RemoteConnection implements DatabaseConnection {
 				}
 			}
 		}
-
 	}
 
 	@Override
 	public void updateQuantity(int itemId, int quantity)
 			throws DatabaseException {
 		HttpPut put = new HttpPut(getServiceURL() + itemId);
+		// add quantity as content
+		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+		nameValuePairs.add(new BasicNameValuePair("quantity", Integer
+				.toString(quantity)));
 
 		HttpResponse response = null;
 		try {
-			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-			nameValuePairs.add(new BasicNameValuePair("quantity", Integer
-					.toString(quantity)));
 			put.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
 			response = mClient.execute(put);
-
 			int statuscode = response.getStatusLine().getStatusCode();
 			switch (statuscode) {
 			case 200: // OK
-				// do nothing
-				break;
-
+				return;
 			default:
 				String statusMessage = response.getStatusLine()
 						.getReasonPhrase();
@@ -195,7 +191,6 @@ public class RemoteConnection implements DatabaseConnection {
 				}
 			}
 		}
-
 	}
 
 	@Override
@@ -208,16 +203,17 @@ public class RemoteConnection implements DatabaseConnection {
 		InputStream contentStream = response.getEntity().getContent();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				contentStream, "UTF-8"), 8);
-
-		StringBuilder sb = new StringBuilder();
-		String line = null;
-		while ((line = reader.readLine()) != null) {
-			sb.append(line + "\n");
+		try {
+			StringBuilder sb = new StringBuilder();
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				sb.append(line + "\n");
+			}
+			String jsonString = sb.toString();
+			return new JSONObject(jsonString);
+		} finally {
+			reader.close();
 		}
-		contentStream.close();
-		String jsonString = sb.toString();
-
-		return new JSONObject(jsonString);
 	}
 
 	private Item parseItemFromJson(JSONObject jsonObject) throws JSONException {
