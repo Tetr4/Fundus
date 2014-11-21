@@ -108,7 +108,7 @@ public class ScannerFragment extends Fragment {
 		mExpandAnimation.setAnimationListener(new AnimationListener() {
 			@Override
 			public void onAnimationStart(Animation animation) {
-				startCamera();
+				startCameraAsync();
 			}
 	
 			@Override
@@ -155,7 +155,7 @@ public class ScannerFragment extends Fragment {
 		collapseNoAnim();
 	}
 
-	private void startCamera() {
+	private void startCameraAsync() {
 		// Task for smooth UI while camera loads
 		mStartCameraTask = new AsyncTask<Void, Void, Exception>() {
 
