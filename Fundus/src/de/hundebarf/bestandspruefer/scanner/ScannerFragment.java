@@ -171,7 +171,7 @@ public class ScannerFragment extends Fragment {
 					mCameraInfo);
 			mCamera.setDisplayOrientation(displayOrientation);
 			mScannerView.requestLayout();
-			mDecoder.stopDecoding(mCamera);
+			mDecoder.stopDecoding();
 			mDecoder.startDecoding(mCamera, displayOrientation);
 		}
 	}
@@ -206,8 +206,7 @@ public class ScannerFragment extends Fragment {
 				int displayOrientation = getCameraDisplayOrientation(display,
 						mCameraInfo);
 				mCamera.setDisplayOrientation(displayOrientation);
-				mScannerView.setCamera(mCamera);
-				mCamera.startPreview();
+				mScannerView.startPreview(mCamera);
 				mDecoder.startDecoding(mCamera, displayOrientation);
 				mScannerView.setVisibility(View.VISIBLE);
 				mTargetReticle.setVisibility(View.VISIBLE);
@@ -220,9 +219,8 @@ public class ScannerFragment extends Fragment {
 			mStartCameraTask.cancel(true);
 		}
 		if (mCamera != null) {
-			mDecoder.stopDecoding(mCamera);
-			mScannerView.setCamera(null);
-			mCamera.stopPreview();
+			mDecoder.stopDecoding();
+			mScannerView.stopPreview();
 			mCamera.release();
 			mCamera = null;
 		}

@@ -43,7 +43,7 @@ public class Decoder implements Camera.PreviewCallback {
 		camera.setPreviewCallbackWithBuffer(this);
 	}
 
-	public void stopDecoding(Camera camera) {
+	public void stopDecoding() {
 		mDecoding = false;
 		if (mDecodeTask != null) {
 			mDecodeTask.cancel(true);

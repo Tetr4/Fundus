@@ -24,21 +24,6 @@ public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
 		mHolder.addCallback(this);
 	}
 
-	public void setCamera(Camera camera) {
-		mCamera = camera;
-		if (mCamera != null) {
-			try {
-				mCamera.setPreviewDisplay(mHolder);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			if (mSurfaceCreated) {
-				requestLayout();
-			}
-		}
-	}
-
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		final int width = resolveSize(getSuggestedMinimumWidth(),
@@ -56,7 +41,8 @@ public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
 		 * depends on the aspect ratio (no stretching).
 		 */
 		if (mPreviewSize != null) {
-			int newHeight = getRatioAdjustedHeight(mPreviewSize, width, height);
+			float ratio = (float) mPreviewSize.width / (float) mPreviewSize.height;
+			int newHeight = (int) (width * ratio);
 			setMeasuredDimension(width, newHeight);
 		} else {
 			setMeasuredDimension(width, height);
@@ -65,42 +51,38 @@ public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		if (mCamera != null) {
-			try {
-				mCamera.setPreviewDisplay(holder);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		requestLayout();
 		mSurfaceCreated = true;
+		startPreview(mCamera);
 	}
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
+		requestLayout();
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		if (mCamera != null) {
+	}
+
+	public void startPreview(Camera camera) {
+		mCamera = camera;
+		if (mCamera != null && mSurfaceCreated) {
 			try {
-				mCamera.setPreviewDisplay(null);
+				mCamera.setPreviewDisplay(mHolder);
+				mCamera.startPreview();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
-	private static int getRatioAdjustedHeight(Size previewSize, int width,
-			int height) {
-		float ratio;
-		if (previewSize.height >= previewSize.width) {
-			ratio = (float) previewSize.height / (float) previewSize.width;
-		} else {
-			ratio = (float) previewSize.width / (float) previewSize.height;
+	public void stopPreview() {
+		if (mCamera != null) {
+			mCamera.stopPreview();
 		}
-		return (int) (width * ratio);
+		mCamera = null;
+		mPreviewSize = null;
+		mSurfaceCreated = false;
 	}
-
 }
