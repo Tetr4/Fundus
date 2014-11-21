@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -87,7 +87,6 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 		mListTask = new CachedDatabaseConnectionTask<List<Item>>(this) {
 			@Override
 			protected void onFinishedReceiving() {
-				Log.d(TAG, "gotData");
 				if (!mGotData) {
 					showFailureLoadingData();
 				}
@@ -99,7 +98,7 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 			@Override
 			protected void onDataReceived(List<Item> items, boolean fromCache) {
 				mGotData = true;
-				if (fromCache) {
+				if (!fromCache) {
 					mGotRemoteData = true;
 				}
 				fillList(items);
@@ -232,8 +231,10 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 	}
 
 	private void showOfflineMode() {
-		// TODO Auto-generated method stub
-
+		// FIXME
+		ActionBar actionBar = getActionBar();
+		CharSequence title = getActionBar().getTitle();
+		actionBar.setTitle(title + " (offline)");
 	}
 
 	private void showFailureLoadingData() {
