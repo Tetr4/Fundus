@@ -24,9 +24,10 @@ import de.hundebarf.bestandspruefer.R;
 import de.hundebarf.bestandspruefer.scanner.Decoder.OnDecodedCallback;
 
 public class ScannerFragment extends Fragment {
-	static final double BOUNDS_FRACTION = 0.6; //
-	static final double VERTICAL_HEIGHT_FRACTION = 0.3;
 	private static final String TAG = ScannerFragment.class.getSimpleName();
+	
+	static final double BOUNDS_FRACTION = 0.6;
+	static final double VERTICAL_HEIGHT_FRACTION = 0.3;
 
 	private FrameLayout mScannerPanel;
 	private ScannerView mScannerView;
@@ -145,17 +146,19 @@ public class ScannerFragment extends Fragment {
 
 		});
 	}
-
+	
 	@Override
 	public void onResume() {
 		super.onResume();
+		if(mExpanded) {
+			startCameraAsync();
+		}
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
 		stopCamera();
-		collapseNoAnim();
 	}
 
 	@Override
