@@ -15,8 +15,17 @@ public class CacheConnection implements DatabaseConnection {
 	public List<Item> queryItemList() throws DatabaseException {
 		// TODO Auto-generated method stub
 		ArrayList<Item> list = new ArrayList<Item>();
-		Item item = new Item(0, "test Item", "bla", "1234");
-		list.add(item);
+		int i = 0;
+		list.add(new Item(i++, "test Item", "frostfleisch", "1234"));
+		list.add(new Item(i++, "test Item", "frostfleisch", "1234"));
+		list.add(new Item(i++, "test Item", "sonstiges", "1234"));
+		list.add(new Item(i++, "test Item", "sonstiges", "1234"));
+		list.add(new Item(i++, "Pferde Nackensehne test", "sonstiges", "4036503099100"));
+		list.add(new Item(i++, "test Item", "sonstiges", "1234"));
+		list.add(new Item(i++, "test Item", "sonstiges", "1234"));
+		list.add(new Item(i++, "test Item", "sonstiges", "1234"));
+		list.add(new Item(i++, "test Item", "blubb", "1234"));
+		list.add(new Item(i++, "test Item", "bla", "1234"));
 		return list;
 	}
 

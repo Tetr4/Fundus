@@ -105,6 +105,8 @@ public abstract class CachedDatabaseConnectionTask<Result> {
 		mRemoteTask.execute(mRemoteConnection);
 	}
 
+	// TODO better exception handling
+	
 	protected abstract void onDataReceived(Result result, boolean fromCache);
 
 	protected abstract void onFinishedReceiving();
