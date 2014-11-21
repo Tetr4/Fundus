@@ -1,7 +1,7 @@
 package de.hundebarf.bestandspruefer.collection;
 
 
-public class Item {
+public class Item implements Comparable<Item>{
 	public int id;
 	public String name;
 	public String shortName;
@@ -35,6 +35,11 @@ public class Item {
 	}
 
 	public Item() {
+	}
+
+	@Override
+	public int compareTo(Item another) {
+		return name.compareTo(another.name);
 	}
 	
 //    ID, barcode, name, kurzname, warengruppe, menge(inhalt),

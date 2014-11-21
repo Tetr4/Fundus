@@ -13,6 +13,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -86,6 +87,7 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 		mListTask = new CachedDatabaseConnectionTask<List<Item>>(this) {
 			@Override
 			protected void onFinishedReceiving() {
+				Log.d(TAG, "gotData");
 				if (!mGotData) {
 					showFailureLoadingData();
 				}
@@ -183,16 +185,25 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 				R.array.disabled_categories);
 		Set<String> disabledCategories = new HashSet<String>();
 		Collections.addAll(disabledCategories, disabledCategoriesArray);
+		
 		Map<String, List<Item>> categoryToItems = new HashMap<String, List<Item>>();
 		for (Item curItem : items) {
+			// disable some categories
 			if (disabledCategories.contains(curItem.category)) {
 				continue;
 			}
+			
+			// remove special category items
+			if(curItem.name.equals(curItem.category)){
+				continue;
+			}
 
+			// create new empty list for category if not exists
 			if (!categoryToItems.containsKey(curItem.category)) {
-				// create new empty list for category
 				categoryToItems.put(curItem.category, new ArrayList<Item>());
 			}
+			
+			// add items to list
 			List<Item> itemsInCategory = categoryToItems.get(curItem.category);
 			itemsInCategory.add(curItem);
 
@@ -203,11 +214,16 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 		}
 
 		// create category objects (for convenient usage)
+		mCategories.clear();
 		for (String curCategoryName : categoryToItems.keySet()) {
 			Category newCategory = new Category(curCategoryName);
-			newCategory.addAll(categoryToItems.get(curCategoryName));
+			List<Item> curItems = categoryToItems.get(curCategoryName);
+			Collections.sort(curItems);
+			newCategory.addAll(curItems);
 			mCategories.add(newCategory);
 		}
+		
+		// sort
 		Collections.sort(mCategories);
 
 		// show list
