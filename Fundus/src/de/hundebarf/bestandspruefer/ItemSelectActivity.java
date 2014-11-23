@@ -14,6 +14,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,13 +27,15 @@ import android.widget.SearchView.OnQueryTextListener;
 import android.widget.Toast;
 import de.hundebarf.bestandspruefer.collection.Category;
 import de.hundebarf.bestandspruefer.collection.Item;
+import de.hundebarf.bestandspruefer.database.CacheConnection;
 import de.hundebarf.bestandspruefer.database.DatabaseConnection;
 import de.hundebarf.bestandspruefer.database.DatabaseException;
-import de.hundebarf.bestandspruefer.database.tasks.CachedDatabaseConnectionTask;
+import de.hundebarf.bestandspruefer.database.RemoteConnection;
+import de.hundebarf.bestandspruefer.database.tasks.DatabaseConnectionTask;
 import de.hundebarf.bestandspruefer.scanner.Decoder.OnDecodedCallback;
 import de.hundebarf.bestandspruefer.scanner.ScannerFragment;
 
-public class ItemSelectActivity extends Activity implements OnDecodedCallback {
+public class ItemSelectActivity extends Activity {
 	public static final String TAG = ItemSelectActivity.class.getSimpleName();
 
 	// Barcode Scanner
@@ -47,14 +50,17 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 	private Map<String, Integer> mBarcodeToID = new HashMap<String, Integer>();
 
 	// data loader
-	private CachedDatabaseConnectionTask<List<Item>> mListTask;
-	private boolean mGotRemoteData;
-	private boolean mGotData;
+	private DatabaseConnectionTask<List<Item>> mListTask;
+	private DatabaseConnection mCacheConnection;
+	private DatabaseConnection mRemoteConnection;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_select);
+		
+		mCacheConnection = new CacheConnection();
+		mRemoteConnection= new RemoteConnection(this);
 
 		initExpandableListView();
 		loadItemsAsync();
@@ -84,32 +90,35 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 	}
 
 	private void loadItemsAsync() {
-		mListTask = new CachedDatabaseConnectionTask<List<Item>>(this) {
-			@Override
-			protected void onFinishedReceiving() {
-				if (!mGotData) {
-					showFailureLoadingData();
-				}
-				if (!mGotRemoteData) {
-					showOfflineMode();
-				}
-			}
-
-			@Override
-			protected void onDataReceived(List<Item> items, boolean fromCache) {
-				mGotData = true;
-				if (!fromCache) {
-					mGotRemoteData = true;
-				}
-				fillList(items);
-			}
-
+		mListTask = new DatabaseConnectionTask<List<Item>>(this) {
 			@Override
 			protected List<Item> executeQuery(DatabaseConnection connection)
 					throws DatabaseException {
 				return connection.queryItemList();
 			}
+			
+			@Override
+			protected void onSuccess(List<Item> result, DatabaseConnection connection) {
+				fillList(result);
+			}
+			
+			@Override
+			protected void onFailure(DatabaseException e, DatabaseConnection connection) {
+				
+			}
+			
+			@Override
+			protected void onFinished(Set<DatabaseConnection> successfulConnections) {
+				if(successfulConnections.contains(mRemoteConnection)) {
+					// everything okay!
+				} else if (successfulConnections.contains(mCacheConnection)) {
+					showOfflineMode();
+				} else {
+					showFailureLoadingData(null);
+				}
+			}
 		};
+		mListTask.execute(mCacheConnection, mRemoteConnection);
 	}
 
 	private void initSearchView() {
@@ -151,7 +160,24 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 		mScannerFragment = (ScannerFragment) getFragmentManager()
 				.findFragmentById(R.id.scanner_fragment);
 
-		mScannerFragment.setOnDecodedCallback(this);
+		mScannerFragment.setOnDecodedCallback(new OnDecodedCallback() {
+			@Override
+			public void onDecoded(String decodedData) {
+				if (mBarcodeToID.containsKey(decodedData)) {
+					// barcode recognized -> start ItemInfoActivity
+					int id = mBarcodeToID.get(decodedData);
+					Intent intent = new Intent(ItemSelectActivity.this, ItemInfoActivity.class);
+					intent.putExtra(ItemInfoActivity.ITEM_ID, id);
+					startActivity(intent);
+				} else {
+					// show not recognized toast
+					String notRecognizedMessage = getResources().getString(
+							R.string.not_recognized_info);
+					Toast.makeText(ItemSelectActivity.this, notRecognizedMessage,
+							Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
 
 		mScannerButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -184,16 +210,16 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 				R.array.disabled_categories);
 		Set<String> disabledCategories = new HashSet<String>();
 		Collections.addAll(disabledCategories, disabledCategoriesArray);
-		
+
 		Map<String, List<Item>> categoryToItems = new HashMap<String, List<Item>>();
 		for (Item curItem : items) {
 			// disable some categories
 			if (disabledCategories.contains(curItem.category)) {
 				continue;
 			}
-			
+
 			// remove special category items
-			if(curItem.name.equals(curItem.category)){
+			if (curItem.name.equals(curItem.category)) {
 				continue;
 			}
 
@@ -201,7 +227,7 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 			if (!categoryToItems.containsKey(curItem.category)) {
 				categoryToItems.put(curItem.category, new ArrayList<Item>());
 			}
-			
+
 			// add items to list
 			List<Item> itemsInCategory = categoryToItems.get(curItem.category);
 			itemsInCategory.add(curItem);
@@ -221,7 +247,7 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 			newCategory.addAll(curItems);
 			mCategories.add(newCategory);
 		}
-		
+
 		// sort
 		Collections.sort(mCategories);
 
@@ -237,13 +263,15 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 		actionBar.setTitle(title + " (offline)");
 	}
 
-	private void showFailureLoadingData() {
-		// e.printStackTrace();
-		// Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-		// finish();
+	private void showFailureLoadingData(DatabaseException e) {
 		// FIXME
-		Toast.makeText(this, "Keine Daten erhältlich", Toast.LENGTH_LONG)
-				.show();
+		if (e != null) {
+			e.printStackTrace();
+			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+		} else {
+			Toast.makeText(this, "Could not load item list", Toast.LENGTH_SHORT)
+					.show();
+		}
 	}
 
 	private void expandAllCategories() {
@@ -262,26 +290,8 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 	}
 
 	@Override
-	public void onDecoded(String decodedData) {
-		if (mBarcodeToID.containsKey(decodedData)) {
-			// barcode recognized -> start ItemInfoActivity
-			int id = mBarcodeToID.get(decodedData);
-			Intent intent = new Intent(this, ItemInfoActivity.class);
-			intent.putExtra(ItemInfoActivity.ITEM_ID, id);
-			startActivity(intent);
-		} else {
-			// show not recognized toast
-			String notRecognizedMessage = getResources().getString(
-					R.string.not_recognized_info);
-			Toast.makeText(ItemSelectActivity.this, notRecognizedMessage,
-					Toast.LENGTH_SHORT).show();
-		}
-	}
-
-	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// TODO inflate when ItemAddActivity is ready
-		// getMenuInflater().inflate(R.menu.item_select, menu);
+		 getMenuInflater().inflate(R.menu.item_select, menu);
 		return true;
 	}
 
@@ -289,8 +299,12 @@ public class ItemSelectActivity extends Activity implements OnDecodedCallback {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
 		switch (id) {
-		case R.id.action_add_item:
-			startActivity(new Intent(this, ItemAddActivity.class));
+//		case R.id.action_add_item:
+//			startActivity(new Intent(this, ItemAddActivity.class));
+//			break;
+			
+		case R.id.action_refresh:
+			loadItemsAsync();
 			break;
 
 		default:

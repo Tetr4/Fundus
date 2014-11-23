@@ -1,8 +1,10 @@
 package de.hundebarf.bestandspruefer;
 
 import java.lang.reflect.Field;
+import java.util.Set;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -10,6 +12,8 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
@@ -18,10 +22,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import de.hundebarf.bestandspruefer.collection.Item;
+import de.hundebarf.bestandspruefer.database.CacheConnection;
 import de.hundebarf.bestandspruefer.database.DatabaseConnection;
 import de.hundebarf.bestandspruefer.database.DatabaseException;
 import de.hundebarf.bestandspruefer.database.RemoteConnection;
-import de.hundebarf.bestandspruefer.database.tasks.CachedDatabaseConnectionTask;
 import de.hundebarf.bestandspruefer.database.tasks.DatabaseConnectionTask;
 
 public class ItemInfoActivity extends Activity {
@@ -31,11 +35,11 @@ public class ItemInfoActivity extends Activity {
 	private TextView mStock;
 	private Dialog mQuantityDialog;
 
-	private CachedDatabaseConnectionTask<Item> mItemTask;
-	private boolean mGotRemoteData;
-	private boolean mGotData;
+	private DatabaseConnectionTask<Item> mItemTask;
 
 	private DatabaseConnectionTask<Integer> mUpdateQuantityTask;
+	private CacheConnection mCacheConnection;
+	private RemoteConnection mRemoteConnection;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,19 +49,20 @@ public class ItemInfoActivity extends Activity {
 
 		// get item which info should be displayed
 		mItemID = getIntent().getExtras().getInt(ITEM_ID, Integer.MIN_VALUE);
-		if (mItemID != Integer.MIN_VALUE) {
-			loadItemAsync(mItemID);
-		} else {
+		if (mItemID == Integer.MIN_VALUE) {
 			throw new IllegalArgumentException(
 					"The item's ID has to be given as an extra with key 'ITEM_ID'");
 		}
-		mStock = (TextView) findViewById(R.id.textview_stock);
+		
+		mCacheConnection = new CacheConnection();
+		mRemoteConnection = new RemoteConnection(this);
+		loadItemAsync(mItemID);
+		
 		initUpdateStockButton();
-
-		super.onCreate(savedInstanceState);
 	}
 
 	private void initUpdateStockButton() {
+		mStock = (TextView) findViewById(R.id.textview_stock);
 		ImageButton editButton = (ImageButton) findViewById(R.id.edit_quantity_button);
 		RelativeLayout editQuantityBar = (RelativeLayout) findViewById(R.id.edit_quantity_bar);
 
@@ -139,64 +144,60 @@ public class ItemInfoActivity extends Activity {
 	}
 
 	private void loadItemAsync(final int itemId) {
-		mItemTask = new CachedDatabaseConnectionTask<Item>(this) {
-
-			@Override
-			protected void onFinishedReceiving() {
-				if (!mGotData) {
-					showFailureLoadingData();
-				}
-				if (!mGotRemoteData) {
-					showOfflineMode();
-				}
-			}
-
-			@Override
-			protected void onDataReceived(Item item, boolean fromCache) {
-				mGotData = true;
-				if (fromCache) {
-					mGotRemoteData = true;
-				}
-				fillFields(item);
-			}
+		mItemTask = new DatabaseConnectionTask<Item>(this) {
 
 			@Override
 			protected Item executeQuery(DatabaseConnection connection)
 					throws DatabaseException {
-				return connection.queryItem(itemId);
+				return connection.queryItem(mItemID);
+			}
+
+			@Override
+			protected void onSuccess(Item item, DatabaseConnection connection) {
+				fillFields(item);
+			}
+
+			@Override
+			protected void onFailure(DatabaseException e,
+					DatabaseConnection connection) {
+			}
+
+			@Override
+			protected void onFinished(
+					Set<DatabaseConnection> successfulConnections) {
+				if (successfulConnections.contains(mRemoteConnection)) {
+					// everything okay!
+				} else if (successfulConnections.contains(mCacheConnection)) {
+					showOfflineMode();
+				} else {
+					showFailureLoadingData(null);
+				}
 			}
 		};
+		mItemTask.execute(mCacheConnection, mRemoteConnection);
 	}
 
 	protected void showOfflineMode() {
-		// TODO Auto-generated method stub
+		// FIXME
+		ActionBar actionBar = getActionBar();
+		CharSequence title = actionBar.getTitle();
+		actionBar.setTitle(title + " (offline)");
 	}
 
-	protected void showFailureLoadingData() {
-		// exception.printStackTrace();
-		// Toast.makeText(ItemInfoActivity.this, exception.getMessage(),
-		// Toast.LENGTH_LONG).show();
+	protected void showFailureLoadingData(Exception e) {
 		// FIXME
-		Toast.makeText(this, "Fehler beim Gegenstand laden", Toast.LENGTH_LONG)
-				.show();
+		if (e != null) {
+			e.printStackTrace();
+			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+		} else {
+			Toast.makeText(this, "Could not load item", Toast.LENGTH_SHORT)
+					.show();
+		}
 		finish();
-
 	}
 
 	private void updateQuantityAsync(final int quantity) {
 		mUpdateQuantityTask = new DatabaseConnectionTask<Integer>(this) {
-
-			@Override
-			protected void onSuccess(Integer newQuantity) {
-				mStock.setText(Integer.toString(newQuantity));
-			}
-
-			@Override
-			protected void onFailure(DatabaseException exception) {
-				exception.printStackTrace();
-				Toast.makeText(ItemInfoActivity.this, exception.getMessage(),
-						Toast.LENGTH_LONG).show();
-			}
 
 			@Override
 			protected Integer executeQuery(DatabaseConnection connection)
@@ -204,15 +205,36 @@ public class ItemInfoActivity extends Activity {
 				connection.updateQuantity(mItemID, quantity);
 				return quantity;
 			}
+
+			@Override
+			protected void onSuccess(Integer newQuantity,
+					DatabaseConnection connection) {
+				mStock.setText(Integer.toString(newQuantity));
+			}
+
+			@Override
+			protected void onFailure(DatabaseException e,
+					DatabaseConnection connection) {
+				// FIXME
+				e.printStackTrace();
+				Toast.makeText(ItemInfoActivity.this, e.getMessage(),
+						Toast.LENGTH_LONG).show();
+
+			}
+
+			@Override
+			protected void onFinished(
+					Set<DatabaseConnection> successfulConnections) {
+			}
 		};
 		mUpdateQuantityTask.execute(new RemoteConnection(this));
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
 		mItemTask.onResume();
-		if(mUpdateQuantityTask != null) {
+		if (mUpdateQuantityTask != null) {
 			mUpdateQuantityTask.onResume();
 		}
 	}
@@ -221,7 +243,7 @@ public class ItemInfoActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		mItemTask.onPause();
-		if(mUpdateQuantityTask != null) {
+		if (mUpdateQuantityTask != null) {
 			mUpdateQuantityTask.onPause();
 		}
 		if (mQuantityDialog != null) {
@@ -263,6 +285,22 @@ public class ItemInfoActivity extends Activity {
 
 		TextView stock = (TextView) findViewById(R.id.textview_stock);
 		stock.setText(Integer.toString(item.stock));
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.item_info, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.action_refresh) {
+			loadItemAsync(mItemID);
+			return true;
+		} else {
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 }

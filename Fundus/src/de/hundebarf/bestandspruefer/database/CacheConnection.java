@@ -7,9 +7,6 @@ import de.hundebarf.bestandspruefer.collection.Item;
 
 public class CacheConnection implements DatabaseConnection {
 
-	public CacheConnection() {
-		// TODO Auto-generated constructor stub
-	}
 
 	@Override
 	public List<Item> queryItemList() throws DatabaseException {
