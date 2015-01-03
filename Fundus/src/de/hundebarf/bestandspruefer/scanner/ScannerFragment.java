@@ -25,7 +25,7 @@ import de.hundebarf.bestandspruefer.scanner.Decoder.OnDecodedCallback;
 
 public class ScannerFragment extends Fragment {
 	private static final String TAG = ScannerFragment.class.getSimpleName();
-	
+
 	static final double BOUNDS_FRACTION = 0.6;
 	static final double VERTICAL_HEIGHT_FRACTION = 0.3;
 
@@ -105,6 +105,7 @@ public class ScannerFragment extends Fragment {
 		mScannerHeightCollapsed = (int) getResources().getDimension(
 				R.dimen.scanner_height_collapsed);
 
+		// expand animation
 		mExpandAnimation = new PanelAnimation(mScannerPanel,
 				mScannerHeightCollapsed, mScannerHeightExpanded);
 		mExpandAnimation.setDuration(200);
@@ -116,7 +117,6 @@ public class ScannerFragment extends Fragment {
 
 			@Override
 			public void onAnimationRepeat(Animation animation) {
-
 			}
 
 			@Override
@@ -125,6 +125,7 @@ public class ScannerFragment extends Fragment {
 			}
 		});
 
+		// collapse animation
 		mCollapseAnimation = new PanelAnimation(mScannerPanel,
 				mScannerHeightExpanded, mScannerHeightCollapsed);
 		mCollapseAnimation.setDuration(200);
@@ -146,11 +147,11 @@ public class ScannerFragment extends Fragment {
 
 		});
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
-		if(mExpanded) {
+		if (mExpanded) {
 			startCameraAsync();
 		}
 	}
@@ -170,7 +171,6 @@ public class ScannerFragment extends Fragment {
 			int displayOrientation = getCameraDisplayOrientation(display,
 					mCameraInfo);
 			mCamera.setDisplayOrientation(displayOrientation);
-			mScannerView.requestLayout();
 			mDecoder.stopDecoding();
 			mDecoder.startDecoding(mCamera, displayOrientation);
 		}
@@ -201,6 +201,7 @@ public class ScannerFragment extends Fragment {
 					collapseNoAnim();
 					return;
 				}
+				
 				Display display = getActivity().getWindowManager()
 						.getDefaultDisplay();
 				int displayOrientation = getCameraDisplayOrientation(display,
