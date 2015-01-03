@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -39,6 +40,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 import de.hundebarf.bestandspruefer.collection.Item;
@@ -48,7 +50,8 @@ public class RemoteConnection implements DatabaseConnection {
 
 	private static final String LAST_KNOWN_URL_PREFERENCE = "LAST_KNOWN_URL_PREFERENCE";
 	private static final String SERVICE_URI = "bestand";
-	private static final int CONNECTION_TIMEOUT = 8000;
+	private static final String[] VALID_SSIDS = new String[] { "HundeBARF", "BatCave" };
+	private static final int CONNECTION_TIMEOUT = 5000;
 	private String mLastKnownServiceURL;
 
 	private DefaultHttpClient mClient;
@@ -159,6 +162,7 @@ public class RemoteConnection implements DatabaseConnection {
 	public void updateQuantity(int itemId, int quantity)
 			throws DatabaseException {
 		HttpPut put = new HttpPut(getServiceURL() + itemId);
+		
 		// add quantity as content
 		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 		nameValuePairs.add(new BasicNameValuePair("quantity", Integer
@@ -261,15 +265,28 @@ public class RemoteConnection implements DatabaseConnection {
 
 	@SuppressLint("DefaultLocale")
 	private String getServiceURL() throws DatabaseException {
+		// check wifi
 		ConnectivityManager connManager = (ConnectivityManager) mContext
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo wifi = connManager
 				.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 		if (!wifi.isConnected()) {
 			// connection to service requires local network
+			Log.i(TAG, "Wifi not connected");
 			throw new DatabaseException("Wifi not connected");
+		} 
+		
+		//check wifi ssid
+		WifiManager wifiManager= (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+		String ssid = wifiInfo.getSSID();
+		ssid = ssid.replace("\"", ""); // remove quot. marks
+		if(!Arrays.asList(VALID_SSIDS).contains(ssid)) {
+			Log.i(TAG, "Wifi SSID (" + ssid + ") is not valid");
+			throw new DatabaseException("Wifi SSID not valid");
 		}
 
+		// check last known url
 		if (mLastKnownServiceURL != null) {
 			HttpHead head = new HttpHead(mLastKnownServiceURL);
 			try {
@@ -283,11 +300,14 @@ public class RemoteConnection implements DatabaseConnection {
 				// Not a valid Service URL -> continue
 			}
 		}
+		
+		// TODO Network Service Discovery?
+		// mLastKnownServiceURL = possibleResult;
+		// mPreferences.edit().putString(LAST_KNOWN_URL_PREFERENCE,
+		// mLastKnownServiceURL).commit();
 
 		// get local ip adress
 		String ipAddress = "192.168.178.";
-		WifiManager wifiManager = (WifiManager) mContext
-				.getSystemService(Context.WIFI_SERVICE);
 		int ipInt = wifiManager.getConnectionInfo().getIpAddress();
 		ipAddress = String
 				.format("%d.%d.%d.%d", (ipInt & 0xff), (ipInt >> 8 & 0xff),
@@ -298,47 +318,46 @@ public class RemoteConnection implements DatabaseConnection {
 
 		// parallel requests to ip range
 		// e.g. "192.168.0.0" to "192.168.0.254"
-		// TODO 255 threads too much? maybe broadcast
-		ExecutorService executor = Executors.newFixedThreadPool(255);
+		int range = 255;
+		// TODO 255 threads too much. maybe broadcast
+		ExecutorService executor = Executors.newFixedThreadPool(range);
 		CompletionService<String> complService = new ExecutorCompletionService<String>(
 				executor);
-		List<Future<String>> futures = new ArrayList<Future<String>>(255);
-		try {
-			// free memory for threads
-			System.gc();
-			System.runFinalization();
-			System.gc();
-			// create callables
-			for (int i = 0; i < 255; i++) {
-				String curURL = "http://" + ipAddress + i + "/" + SERVICE_URI
-						+ "/";
-				CheckConnection checkConnection = new CheckConnection(curURL);
-				futures.add(complService.submit(checkConnection));
-			}
-
-			// get first result
-			for (int i = 0; i < 255; i++) {
-				try {
-					String possibleResult = complService.take().get();
-					if (possibleResult != null) {
-						mLastKnownServiceURL = possibleResult;
-						mPreferences
-								.edit()
-								.putString(LAST_KNOWN_URL_PREFERENCE,
-										mLastKnownServiceURL).commit();
-						Log.i(TAG, "Found WebService at: "
-								+ mLastKnownServiceURL);
-						return mLastKnownServiceURL;
-					}
-				} catch (ExecutionException e) {
-					// Ignore
-				} catch (InterruptedException e) {
-					// Ignore
+		List<Future<String>> futures = new ArrayList<Future<String>>(range);
+		// free memory for threads
+		System.gc();
+		System.runFinalization();
+		System.gc();
+		// create callables
+		for (int i = 0; i < range; i++) {
+			String curURL = "http://" + ipAddress + i + "/" + SERVICE_URI
+					+ "/";
+			CheckConnection checkConnection = new CheckConnection(curURL);
+			futures.add(complService.submit(checkConnection));
+		}
+		// get first result
+		for (int i = 0; i < range; i++) {
+			try {
+				String possibleResult = complService.take().get();
+				if (possibleResult != null) {
+					mLastKnownServiceURL = possibleResult;
+					mPreferences
+							.edit()
+							.putString(LAST_KNOWN_URL_PREFERENCE,
+									mLastKnownServiceURL).commit();
+					Log.i(TAG, "Found WebService at: "
+							+ mLastKnownServiceURL);
+					return mLastKnownServiceURL;
+				}
+			} catch (ExecutionException e) {
+				// Ignore
+			} catch (InterruptedException e) {
+				// Ignore
+			} finally {
+				for (Future<String> curFuture : futures) {
+					curFuture.cancel(true);
 				}
 			}
-		} finally {
-			for (Future<String> curFuture : futures)
-				curFuture.cancel(true);
 		}
 
 		throw new DatabaseException("Could not find Webservice");
