@@ -58,11 +58,11 @@ public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
-		requestLayout();
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
+		mSurfaceCreated = false;
 	}
 
 	public void startPreview(Camera camera) {
@@ -83,6 +83,5 @@ public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
 		}
 		mCamera = null;
 		mPreviewSize = null;
-		mSurfaceCreated = false;
 	}
 }
