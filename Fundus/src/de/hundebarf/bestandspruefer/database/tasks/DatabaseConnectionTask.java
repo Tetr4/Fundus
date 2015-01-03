@@ -4,44 +4,43 @@ import java.util.HashSet;
 import java.util.Set;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import de.hundebarf.bestandspruefer.collection.QueryResult;
 import de.hundebarf.bestandspruefer.database.DatabaseConnection;
 import de.hundebarf.bestandspruefer.database.DatabaseException;
 
 public abstract class DatabaseConnectionTask<DATA> extends
-		ProgressDialogTask<DatabaseConnection, Void, Void> {
+		ProgressDialogTask<DatabaseConnection, QueryResult<DATA>, Void> {
 	private Set<DatabaseConnection> mSuccessfulConnections = new HashSet<DatabaseConnection>();
-	private DatabaseException mException;
-	private DatabaseConnection mConnection;
-	private DATA mResult;
 
 	public DatabaseConnectionTask(Context context) {
 		super(context);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Void doInBackground(DatabaseConnection... connections) {
 		for (DatabaseConnection curConnection : connections) {
-			mConnection = curConnection;
-			mException = null;
-			mResult = null;
+			QueryResult<DATA> result = new QueryResult<DATA>();
+			result.connection = curConnection;
 			try {
-				mResult = executeQuery(curConnection);
-				mSuccessfulConnections.add(curConnection);
+				result.data = executeQuery(curConnection);
 			} catch (DatabaseException e) {
-				mException = e;
+				result.exception = e;
 			}
-			publishProgress();
+			publishProgress(result);
 		}
 		return null;
 	}
 
 	@Override
-	protected void onProgressUpdate(Void... v) {
-		super.onProgressUpdate(v);
-		if (mResult != null) {
-			onSuccess(mResult, mConnection);
+	protected void onProgressUpdate(QueryResult<DATA>... results) {
+		QueryResult<DATA> result = results[0];
+		if (result.data != null) {
+			mSuccessfulConnections.add(result.connection);
+			onSuccess(result.data, result.connection);
 		} else {
-			onFailure(mException, mConnection);
+			onFailure(result.exception, result.connection);
 		}
 	}
 
@@ -52,7 +51,8 @@ public abstract class DatabaseConnectionTask<DATA> extends
 	}
 
 	@Override
-	protected void onCancelled() {
+	public void onCancel(DialogInterface dialog) {
+		super.onCancel(dialog);
 		onFinished(mSuccessfulConnections);
 	}
 
