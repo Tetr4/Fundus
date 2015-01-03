@@ -62,41 +62,41 @@ public class Decoder implements Camera.PreviewCallback {
 		return new byte[bufferSize];
 	}
 
+	/*
+	 * Called when the camera has a buffer, e.g. by calling
+	 * camera.addCallbackBuffer(buffer). This buffer is automatically removed,
+	 * but added again after decoding, resulting in a loop until stopDecoding()
+	 * is called.
+	 */
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
 		if (mDecoding) {
-			// Called when the camera has a buffer, e.g. by calling
-			// camera.addCallbackBuffer(buffer). This buffer is automatically
-			// removed, but added again after decoding, resulting in a loop
-			// until stopDecoding() is called.
-
-			mDecodeTask = new DecodeTask(this, camera,
-					mCameraDisplayOrientation);
+			mDecodeTask = new DecodeTask(this, camera, mCameraDisplayOrientation);
 			mDecodeTask.execute(data);
 		}
 	}
 
+	/*
+	 * called by mDecodeTask
+	 */
 	public void onDecodeSuccess(String string) {
 		Log.i(Decoder.TAG, "Decode success.");
 		if (mDecoding) {
 			mCallback.onDecoded(string);
-			// request next frame
-			mDelayTimer
-					.schedule(new RequestPreviewFrameTask(), DECODE_INTERVAL);
+			// request next frame after delay
+			mDelayTimer.schedule(new RequestPreviewFrameTask(), DECODE_INTERVAL);
 		}
 	}
 
+	/*
+	 * called by mDecodeTask
+	 */
 	public void onDecodeFail() {
-//		Log.i(Decoder.TAG, "Decode fail.");
+		// Log.i(Decoder.TAG, "Decode fail.");
 		if (mDecoding) {
-			// request next frame
-			mDelayTimer
-					.schedule(new RequestPreviewFrameTask(), DECODE_INTERVAL);
+			// request next frame after delay
+			mDelayTimer.schedule(new RequestPreviewFrameTask(), DECODE_INTERVAL);
 		}
-	}
-
-	public interface OnDecodedCallback {
-		void onDecoded(String decodedData);
 	}
 
 	private class RequestPreviewFrameTask extends TimerTask {
@@ -118,6 +118,10 @@ public class Decoder implements Camera.PreviewCallback {
 			}
 		}
 
+	}
+
+	public interface OnDecodedCallback {
+		void onDecoded(String decodedData);
 	}
 
 }

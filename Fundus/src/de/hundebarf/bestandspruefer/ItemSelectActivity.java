@@ -8,13 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,6 +35,7 @@ import de.hundebarf.bestandspruefer.scanner.ScannerFragment;
 
 public class ItemSelectActivity extends Activity {
 	public static final String TAG = ItemSelectActivity.class.getSimpleName();
+	private String mTitle;
 
 	// Barcode Scanner
 	private ScannerFragment mScannerFragment;
@@ -47,21 +46,24 @@ public class ItemSelectActivity extends Activity {
 	private ExpandableListView mExpandableListView;
 	private ExpandableItemListAdapter mListAdapter;
 	private List<Category> mCategories = new ArrayList<Category>();
-	private Map<String, Integer> mBarcodeToID = new HashMap<String, Integer>();
+	private Map<String, Integer> mBarcodeToItemID = new HashMap<String, Integer>();
 
 	// data loader
 	private DatabaseConnectionTask<List<Item>> mListTask;
 	private DatabaseConnection mCacheConnection;
 	private DatabaseConnection mRemoteConnection;
 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_select);
 		
-		mCacheConnection = new CacheConnection();
+		mCacheConnection = new CacheConnection(this);
 		mRemoteConnection= new RemoteConnection(this);
-
+		
+		mTitle = getResources().getString(R.string.app_name);
+		
 		initExpandableListView();
 		loadItemsAsync();
 		initSearchView();
@@ -76,14 +78,9 @@ public class ItemSelectActivity extends Activity {
 			@Override
 			public boolean onChildClick(ExpandableListView parent, View v,
 					int groupPosition, int childPosition, long id) {
-				// Item in ExpandableListView is clicked -> start
-				// ItemInfoActivity
-				Intent intent = new Intent(ItemSelectActivity.this,
-						ItemInfoActivity.class);
 				Item item = (Item) mListAdapter.getChild(groupPosition,
 						childPosition);
-				intent.putExtra(ItemInfoActivity.ITEM_ID, item.id);
-				startActivity(intent);
+				startItemInfoActivity(item.id);
 				return true;
 			}
 		});
@@ -110,7 +107,7 @@ public class ItemSelectActivity extends Activity {
 			@Override
 			protected void onFinished(Set<DatabaseConnection> successfulConnections) {
 				if(successfulConnections.contains(mRemoteConnection)) {
-					// everything okay!
+					hideOfflineMode();
 				} else if (successfulConnections.contains(mCacheConnection)) {
 					showOfflineMode();
 				} else {
@@ -125,7 +122,7 @@ public class ItemSelectActivity extends Activity {
 		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 		mSearchView = (SearchView) findViewById(R.id.search_view);
 
-		// green underline
+		// underline color
 		int searchPlateId = mSearchView.getContext().getResources()
 				.getIdentifier("android:id/search_plate", null, null);
 		View searchPlate = mSearchView.findViewById(searchPlateId);
@@ -163,12 +160,10 @@ public class ItemSelectActivity extends Activity {
 		mScannerFragment.setOnDecodedCallback(new OnDecodedCallback() {
 			@Override
 			public void onDecoded(String decodedData) {
-				if (mBarcodeToID.containsKey(decodedData)) {
-					// barcode recognized -> start ItemInfoActivity
-					int id = mBarcodeToID.get(decodedData);
-					Intent intent = new Intent(ItemSelectActivity.this, ItemInfoActivity.class);
-					intent.putExtra(ItemInfoActivity.ITEM_ID, id);
-					startActivity(intent);
+				if (mBarcodeToItemID.containsKey(decodedData)) {
+					// barcode recognized
+					int id = mBarcodeToItemID.get(decodedData);
+					startItemInfoActivity(id);
 				} else {
 					// show not recognized toast
 					String notRecognizedMessage = getResources().getString(
@@ -204,13 +199,13 @@ public class ItemSelectActivity extends Activity {
 	}
 
 	private void fillList(List<Item> items) {
-		// associate items with categories and barcodes with ids
-		// HashSet/-Map for fast collision checking
+		// disabled Categories as HashSet for fast checking
 		String[] disabledCategoriesArray = getResources().getStringArray(
 				R.array.disabled_categories);
 		Set<String> disabledCategories = new HashSet<String>();
 		Collections.addAll(disabledCategories, disabledCategoriesArray);
 
+		// associate items with categories and barcodes with ids
 		Map<String, List<Item>> categoryToItems = new HashMap<String, List<Item>>();
 		for (Item curItem : items) {
 			// disable some categories
@@ -234,7 +229,7 @@ public class ItemSelectActivity extends Activity {
 
 			// associate barcodes with ids
 			if (curItem.barcode != null) {
-				mBarcodeToID.put(curItem.barcode, curItem.id);
+				mBarcodeToItemID.put(curItem.barcode, curItem.id);
 			}
 		}
 
@@ -247,8 +242,6 @@ public class ItemSelectActivity extends Activity {
 			newCategory.addAll(curItems);
 			mCategories.add(newCategory);
 		}
-
-		// sort
 		Collections.sort(mCategories);
 
 		// show list
@@ -256,12 +249,22 @@ public class ItemSelectActivity extends Activity {
 		mListAdapter.notifyDataSetChanged();
 	}
 
+	private void startItemInfoActivity(int id) {
+		Intent intent = new Intent(ItemSelectActivity.this, ItemInfoActivity.class);
+		intent.putExtra(ItemInfoActivity.ITEM_ID, id);
+		startActivity(intent);
+	}
+
 	private void showOfflineMode() {
 		// FIXME
-		ActionBar actionBar = getActionBar();
-		CharSequence title = getActionBar().getTitle();
-		actionBar.setTitle(title + " (offline)");
+		getActionBar().setTitle(mTitle + " (offline)");
 	}
+	
+	private void hideOfflineMode() {
+		// FIXME
+		getActionBar().setTitle(mTitle);
+	}
+
 
 	private void showFailureLoadingData(DatabaseException e) {
 		// FIXME

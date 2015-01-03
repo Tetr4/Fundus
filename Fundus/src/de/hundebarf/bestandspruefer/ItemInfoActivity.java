@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.util.Set;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -31,15 +30,16 @@ import de.hundebarf.bestandspruefer.database.tasks.DatabaseConnectionTask;
 public class ItemInfoActivity extends Activity {
 	public static final String ITEM_ID = "ITEM_ID";
 	private static final int NUMBERPICKER_MAX_VALUE = 9999;
-	private int mItemID;
-	private TextView mStock;
 	private Dialog mQuantityDialog;
-
-	private DatabaseConnectionTask<Item> mItemTask;
-
-	private DatabaseConnectionTask<Integer> mUpdateQuantityTask;
+	private TextView mStock;
+	
+	private Item mItem;
+	private int mItemID;
+	
 	private CacheConnection mCacheConnection;
 	private RemoteConnection mRemoteConnection;
+	private DatabaseConnectionTask<Item> mItemTask;
+	private DatabaseConnectionTask<Integer> mUpdateQuantityTask;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +54,7 @@ public class ItemInfoActivity extends Activity {
 					"The item's ID has to be given as an extra with key 'ITEM_ID'");
 		}
 		
-		mCacheConnection = new CacheConnection();
+		mCacheConnection = new CacheConnection(this);
 		mRemoteConnection = new RemoteConnection(this);
 		loadItemAsync(mItemID);
 		
@@ -63,30 +63,31 @@ public class ItemInfoActivity extends Activity {
 
 	private void initUpdateStockButton() {
 		mStock = (TextView) findViewById(R.id.textview_stock);
+		
 		ImageButton editButton = (ImageButton) findViewById(R.id.edit_quantity_button);
 		RelativeLayout editQuantityBar = (RelativeLayout) findViewById(R.id.edit_quantity_bar);
-
+		
 		OnClickListener onClickListener = new OnClickListener() {
-
 			@Override
 			public void onClick(View v) {
 				createNumberPickerDialog();
 			}
 		};
-
+		
 		editButton.setOnClickListener(onClickListener);
 		editQuantityBar.setOnClickListener(onClickListener);
 	}
 
 	private void createNumberPickerDialog() {
-		@SuppressLint("InflateParams")
+		// inflate layout
 		// No rootView required for AlertDialog
+		@SuppressLint("InflateParams") 
 		RelativeLayout dialogLayout = (RelativeLayout) getLayoutInflater()
 				.inflate(R.layout.numberpicker_dialog, null);
 		final NumberPicker numberPicker = (NumberPicker) dialogLayout
 				.findViewById(R.id.numberpicker);
-		numberPicker.setDividerDrawable(getResources().getDrawable(
-				R.color.green));
+		
+		// set numberpicker values
 		numberPicker.setMaxValue(NUMBERPICKER_MAX_VALUE);
 		numberPicker.setMinValue(0);
 		int currentQuantity = Integer.parseInt(mStock.getText().toString());
@@ -96,10 +97,12 @@ public class ItemInfoActivity extends Activity {
 			numberPicker.setValue(currentQuantity);
 		}
 		numberPicker.setWrapSelectorWheel(false);
-
+		
+		// create dialog from layout
 		Builder builder = new AlertDialog.Builder(this);
 		builder.setView(dialogLayout);
 		builder.setTitle(getResources().getString(R.string.edit_quantity));
+		// TODO resource string
 		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -108,10 +111,10 @@ public class ItemInfoActivity extends Activity {
 				dialog.dismiss();
 			}
 		});
-
 		mQuantityDialog = builder.create();
 		mQuantityDialog.show();
 
+		// colorize
 		int dialogColor = getResources().getColor(R.color.green);
 
 		// Title Color
@@ -121,13 +124,13 @@ public class ItemInfoActivity extends Activity {
 				.findViewById(titleTextViewId);
 		titleTextView.setTextColor(dialogColor);
 
-		// Divider Color
+		// Dialog divider color
 		int dividerId = mQuantityDialog.getContext().getResources()
 				.getIdentifier("android:id/titleDivider", null, null);
 		View divider = mQuantityDialog.findViewById(dividerId);
 		divider.setBackgroundColor(dialogColor);
 
-		// NumberPicker Divider Color
+		// NumberPicker divider color
 		try {
 			// Reflection Magic!
 			Field selectionDivider = NumberPicker.class
@@ -149,7 +152,7 @@ public class ItemInfoActivity extends Activity {
 			@Override
 			protected Item executeQuery(DatabaseConnection connection)
 					throws DatabaseException {
-				return connection.queryItem(mItemID);
+				return connection.queryItem(itemId);
 			}
 
 			@Override
@@ -166,7 +169,7 @@ public class ItemInfoActivity extends Activity {
 			protected void onFinished(
 					Set<DatabaseConnection> successfulConnections) {
 				if (successfulConnections.contains(mRemoteConnection)) {
-					// everything okay!
+					hideOfflineMode();
 				} else if (successfulConnections.contains(mCacheConnection)) {
 					showOfflineMode();
 				} else {
@@ -177,20 +180,35 @@ public class ItemInfoActivity extends Activity {
 		mItemTask.execute(mCacheConnection, mRemoteConnection);
 	}
 
-	protected void showOfflineMode() {
+	private void showOfflineMode() {
 		// FIXME
-		ActionBar actionBar = getActionBar();
-		CharSequence title = actionBar.getTitle();
-		actionBar.setTitle(title + " (offline)");
+		getActionBar().setTitle(mItem.name + " (offline)");
+	}
+	
+	private void hideOfflineMode() {
+		// FIXME
+		getActionBar().setTitle(mItem.name);
 	}
 
-	protected void showFailureLoadingData(Exception e) {
+	private void showFailureLoadingData(Exception e) {
 		// FIXME
 		if (e != null) {
 			e.printStackTrace();
 			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
 		} else {
 			Toast.makeText(this, "Could not load item", Toast.LENGTH_SHORT)
+					.show();
+		}
+		finish();
+	}
+	
+	private void showFailureUpdatingQuantity(Exception e) {
+		// FIXME
+		if (e != null) {
+			e.printStackTrace();
+			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+		} else {
+			Toast.makeText(this, "Could not update quantity", Toast.LENGTH_SHORT)
 					.show();
 		}
 		finish();
@@ -215,11 +233,7 @@ public class ItemInfoActivity extends Activity {
 			@Override
 			protected void onFailure(DatabaseException e,
 					DatabaseConnection connection) {
-				// FIXME
-				e.printStackTrace();
-				Toast.makeText(ItemInfoActivity.this, e.getMessage(),
-						Toast.LENGTH_LONG).show();
-
+				showFailureUpdatingQuantity(e);
 			}
 
 			@Override
@@ -252,6 +266,8 @@ public class ItemInfoActivity extends Activity {
 	}
 
 	private void fillFields(Item item) {
+		mItem = item;
+		
 		getActionBar().setTitle(item.name);
 
 		TextView id = (TextView) findViewById(R.id.textview_id);
