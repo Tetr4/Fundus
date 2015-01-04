@@ -17,6 +17,7 @@ public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
 
 	private Camera mCamera;
 	private Size mPreviewSize;
+	private int mDisplayOrientation;
 
 	public ScannerView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -37,13 +38,25 @@ public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
 		}
 
 		/*
-		 * Set height and width for the SurfaceView. Width is given and height
-		 * depends on the aspect ratio (no stretching).
+		 * Set height and width for the SurfaceView. Width and height depend on
+		 * the aspect ratio (no stretching).
 		 */
 		if (mPreviewSize != null) {
-			float ratio = (float) mPreviewSize.width / (float) mPreviewSize.height;
-			int newHeight = (int) (width * ratio);
-			setMeasuredDimension(width, newHeight);
+			double aspectRatio = 0;
+			if (mDisplayOrientation == 90 || mDisplayOrientation == 270) {
+				aspectRatio = (double) mPreviewSize.height / mPreviewSize.width;
+			} else {
+				aspectRatio = (double) mPreviewSize.width / mPreviewSize.height;
+			}
+
+			int newWidth = (int) (height * aspectRatio);
+			int newHeight = (int) (width / aspectRatio);
+
+			if (newHeight < height) {
+				setMeasuredDimension(newWidth, height);
+			} else {
+				setMeasuredDimension(width, newHeight);
+			}
 		} else {
 			setMeasuredDimension(width, height);
 		}
@@ -52,7 +65,7 @@ public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		mSurfaceCreated = true;
-		startPreview(mCamera);
+		startPreview(mCamera, mDisplayOrientation);
 	}
 
 	@Override
@@ -65,8 +78,9 @@ public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
 		mSurfaceCreated = false;
 	}
 
-	public void startPreview(Camera camera) {
+	public void startPreview(Camera camera, int displayOrientation) {
 		mCamera = camera;
+		mDisplayOrientation = displayOrientation;
 		if (mCamera != null && mSurfaceCreated) {
 			try {
 				mCamera.setPreviewDisplay(mHolder);
