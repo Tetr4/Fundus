@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- use flashlight while scanning -->
     <uses-permission android:name="android.permission.FLASHLIGHT" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
 
     <uses-feature 
         android:name="android.hardware.wifi"
@@ -41,7 +43,8 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        android:windowSoftInputMode="adjustResize" >
+        android:windowSoftInputMode="adjustResize"
+        android:name=".FundusApplication" >
         <activity
             android:name=".ItemSelectActivity"
             android:label="@string/app_name"
@@ -60,7 +63,12 @@
         <activity
             android:name=".ItemAddActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_add"
+            android:label="@string/activity_add_title"
+            android:parentActivityName=".ItemSelectActivity" />
+        <activity
+            android:name=".LoginActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/activity_login_title"
             android:parentActivityName=".ItemSelectActivity" />
     </application>
 

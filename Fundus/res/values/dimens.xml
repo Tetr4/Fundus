@@ -4,6 +4,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="activity_item_info_horizontal_margin">32dp</dimen>
     <dimen name="activity_item_info_vertical_margin">16dp</dimen>
+
     
     <dimen name="round_button_diameter">56dp</dimen>
     <dimen name="round_button_margin">16dp</dimen>
@@ -22,5 +23,9 @@
     <dimen name="scanner_border_radius">15dp</dimen>
     <dimen name="scanner_border_radius_outer">18dp</dimen>
     <dimen name="scanner_icon_margin">16dp</dimen>
+    
+    <dimen name="activity_login_horizontal_padding">32dp</dimen>
+    <dimen name="activity_login_vertical_padding">8dp</dimen> 
+    <dimen name="login_image_margin">64dp</dimen>
 
 </resources>

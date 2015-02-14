@@ -2,18 +2,21 @@
 <resources>
 
     <string name="app_name">Fundus</string>
-    <string name="title_activity_add">Add Item</string>
-    
-    <string name="camera_button">Scan Barcode</string>
-    
     <string name="action_add_item">Add new Item</string>
     <string name="action_refresh">Refresh</string>
-    
+
+    <!-- ItemSelectActivity -->
+    <string name="camera_button">Scan Barcode</string>
+    <string name="searchview_query_hint"></string>
     <string name="not_recognized_info">Barcode not in Database</string>
-    <string name="query_info">Connecting to Database…</string>  
-    
+    <string name="query_info">Connecting to Database…</string>
+
+    <!-- ItemAddActivity -->
+    <string name="activity_add_title">Add Item</string>
     <string name="empty_fields_warning">Please fill out all fields.</string>
-    
+    <string name="add_button">Add Item</string>
+
+    <!-- ItemInfoActivity -->
     <string name="item_id">Database-ID</string>
     <string name="item_name">Name</string>
     <string name="item_name_hint">Blättermagen</string>
@@ -38,11 +41,16 @@
     <string name="item_tax_hint">A</string>
     <string name="item_supplier">Supplier</string>
     <string name="item_supplier_hint">Pegasus</string>
-    
-    <string name="add_button">Add Item</string>
-    
     <string name="item_quantity">Quantity</string>
     <string name="edit_quantity">New Quantity</string>
     <string name="edit_quantity_button_content">Edit Quantity</string>
-     
+
+    <!-- LoginActivity -->
+    <string name="activity_login_title">Login</string>
+    <string name="login_image_content">Fundus</string>
+    <string name="edittext_user_hint">User</string>
+    <string name="edittext_password_hint">Password</string>
+    <string name="button_login">Login</string>
+    <string name="button_skip">Skip</string>
+
 </resources>
