@@ -22,6 +22,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
+import de.hundebarf.bestandspruefer.FundusApplication;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -33,9 +34,6 @@ import android.util.Log;
 
 public class ServiceFinder {
 	private static final String TAG = ServiceFinder.class.getSimpleName();
-	private static final String LAST_KNOWN_URL_PREFERENCE = "LAST_KNOWN_URL_PREFERENCE";
-	private static final String SERVICE_URI = "bestand";
-	private static final String[] VALID_SSIDS = new String[] { "HundeBARF",	"BatCave" };
 	private String mLastKnownServiceURL;
 	private SharedPreferences mPreferences;
 	private Context mContext;
@@ -48,8 +46,8 @@ public class ServiceFinder {
 		mCredsProvider = credsProvider;
 		
 		// last known service url
-		mPreferences = context.getSharedPreferences(LAST_KNOWN_URL_PREFERENCE, Context.MODE_PRIVATE);
-		mLastKnownServiceURL = mPreferences.getString(LAST_KNOWN_URL_PREFERENCE, null);
+		mPreferences = context.getSharedPreferences(FundusApplication.PREFERENCES, Context.MODE_PRIVATE);
+		mLastKnownServiceURL = mPreferences.getString(FundusApplication.LAST_KNOWN_URL_PREFERENCE, null);
 	}
 
 	@SuppressLint("DefaultLocale")
@@ -71,7 +69,8 @@ public class ServiceFinder {
 		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 		String ssid = wifiInfo.getSSID();
 		ssid = ssid.replace("\"", ""); // remove quot. marks
-		if (!Arrays.asList(VALID_SSIDS).contains(ssid)) {
+		List<String> validSSIDS = Arrays.asList(FundusApplication.VALID_SSIDS);
+		if (!validSSIDS.contains(ssid)) {
 			Log.i(TAG, "Wifi SSID (" + ssid + ") is not valid");
 			throw new DatabaseException("Wifi SSID not valid");
 		}
@@ -119,7 +118,7 @@ public class ServiceFinder {
 		System.runFinalization();
 		System.gc();
 		for (int i = 0; i < range; i++) {
-			String curURL = "http://" + ipAddress + i + "/" + SERVICE_URI + "/";
+			String curURL = "http://" + ipAddress + i + "/" + FundusApplication.SERVICE_URI + "/";
 			CheckConnection checkConnection = new CheckConnection(curURL, mCredsProvider);
 			futures.add(complService.submit(checkConnection));
 		}
@@ -132,8 +131,9 @@ public class ServiceFinder {
 					mLastKnownServiceURL = possibleResult;
 					mPreferences
 							.edit()
-							.putString(LAST_KNOWN_URL_PREFERENCE,
-									mLastKnownServiceURL).commit();
+							.putString(FundusApplication.LAST_KNOWN_URL_PREFERENCE,
+									mLastKnownServiceURL)
+							.commit();
 					Log.i(TAG, "Found WebService at: " + mLastKnownServiceURL);
 					return mLastKnownServiceURL;
 				}
