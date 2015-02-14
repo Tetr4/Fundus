@@ -24,7 +24,7 @@ import de.hundebarf.bestandspruefer.collection.Item;
 import de.hundebarf.bestandspruefer.database.CacheConnection;
 import de.hundebarf.bestandspruefer.database.DatabaseConnection;
 import de.hundebarf.bestandspruefer.database.DatabaseException;
-import de.hundebarf.bestandspruefer.database.RemoteConnection;
+import de.hundebarf.bestandspruefer.database.ServiceConnection;
 import de.hundebarf.bestandspruefer.database.tasks.DatabaseConnectionTask;
 
 public class ItemInfoActivity extends Activity {
@@ -37,7 +37,7 @@ public class ItemInfoActivity extends Activity {
 	private int mItemID;
 	
 	private CacheConnection mCacheConnection;
-	private RemoteConnection mRemoteConnection;
+	private ServiceConnection mRemoteConnection;
 	private DatabaseConnectionTask<Item> mItemTask;
 	private DatabaseConnectionTask<Integer> mUpdateQuantityTask;
 
@@ -55,7 +55,7 @@ public class ItemInfoActivity extends Activity {
 		}
 		
 		mCacheConnection = new CacheConnection(this);
-		mRemoteConnection = new RemoteConnection(this);
+		mRemoteConnection = new ServiceConnection(this);
 		loadItemAsync(mItemID);
 		
 		initUpdateStockButton();
@@ -241,7 +241,7 @@ public class ItemInfoActivity extends Activity {
 					Set<DatabaseConnection> successfulConnections) {
 			}
 		};
-		mUpdateQuantityTask.execute(new RemoteConnection(this));
+		mUpdateQuantityTask.execute(new ServiceConnection(this));
 	}
 
 	@Override

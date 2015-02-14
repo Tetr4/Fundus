@@ -28,7 +28,7 @@ import de.hundebarf.bestandspruefer.collection.Item;
 import de.hundebarf.bestandspruefer.database.CacheConnection;
 import de.hundebarf.bestandspruefer.database.DatabaseConnection;
 import de.hundebarf.bestandspruefer.database.DatabaseException;
-import de.hundebarf.bestandspruefer.database.RemoteConnection;
+import de.hundebarf.bestandspruefer.database.ServiceConnection;
 import de.hundebarf.bestandspruefer.database.tasks.DatabaseConnectionTask;
 import de.hundebarf.bestandspruefer.scanner.Decoder.OnDecodedCallback;
 import de.hundebarf.bestandspruefer.scanner.ScannerFragment;
@@ -60,7 +60,7 @@ public class ItemSelectActivity extends Activity {
 		setContentView(R.layout.activity_item_select);
 		
 		mCacheConnection = new CacheConnection(this);
-		mRemoteConnection= new RemoteConnection(this);
+		mRemoteConnection= new ServiceConnection(this);
 		
 		mTitle = getResources().getString(R.string.app_name);
 		
