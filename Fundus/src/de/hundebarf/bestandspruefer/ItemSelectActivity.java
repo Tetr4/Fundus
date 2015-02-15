@@ -309,6 +309,13 @@ public class ItemSelectActivity extends Activity {
 		case R.id.action_refresh:
 			loadItemsAsync();
 			break;
+			
+		case R.id.action_login:
+			FundusApplication app = (FundusApplication) getApplicationContext();
+			app.setSkipLogin(false);
+			Intent intent = new Intent(this, LoginActivity.class);
+			startActivity(intent);
+			break;
 
 		default:
 			break;

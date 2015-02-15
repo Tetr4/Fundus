@@ -4,6 +4,7 @@
     <string name="app_name">Fundus</string>
     <string name="action_add_item">Neuen Gegenstand hinzufügen</string>
     <string name="action_refresh">Refresh</string>
+    <string name="action_login">Login</string>
 
     <!-- ItemSelectActivity -->
     <string name="camera_button">Barcode scannen</string>

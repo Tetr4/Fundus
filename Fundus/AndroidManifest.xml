@@ -16,10 +16,11 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- use flashlight while scanning -->
     <uses-permission android:name="android.permission.FLASHLIGHT" />
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <!-- account with username and password for database access -->
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
-    <uses-feature 
+    <uses-feature
         android:name="android.hardware.wifi"
         android:required="true" />
     <uses-feature
@@ -39,37 +40,37 @@
         android:required="false" />
 
     <application
+        android:name=".FundusApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        android:windowSoftInputMode="adjustResize"
-        android:name=".FundusApplication" >
+        android:windowSoftInputMode="adjustResize" >
         <activity
             android:name=".ItemSelectActivity"
-            android:label="@string/app_name"
             android:configChanges="orientation|screenSize"
-            android:launchMode="singleTop" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"/>
         <activity
             android:name=".ItemInfoActivity"
             android:configChanges="orientation|screenSize"
+            android:launchMode="singleInstance"
             android:parentActivityName=".ItemSelectActivity" />
         <activity
             android:name=".ItemAddActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/activity_add_title"
+            android:launchMode="singleInstance"
             android:parentActivityName=".ItemSelectActivity" />
         <activity
             android:name=".LoginActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/activity_login_title"
-            android:parentActivityName=".ItemSelectActivity" />
+            android:launchMode="singleInstance" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
