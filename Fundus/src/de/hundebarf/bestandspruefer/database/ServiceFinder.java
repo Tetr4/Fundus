@@ -24,6 +24,7 @@ import org.apache.http.params.HttpParams;
 
 import de.hundebarf.bestandspruefer.FundusApplication;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -79,17 +80,20 @@ public class ServiceFinder {
 		if (mLastKnownServiceURL != null) {
 			HttpHead head = new HttpHead(mLastKnownServiceURL);
 			HttpResponse response = null;
+			int statuscode = 0;
 			try {
 				response = mClient.execute(head);
-				int statuscode = response.getStatusLine().getStatusCode();
-				if (statuscode == 200) { // OK
-					Log.i(TAG, "Last known Service URL is valid.");
-					return mLastKnownServiceURL;
-				}
+				statuscode = response.getStatusLine().getStatusCode();
 			} catch (IOException e) {
 				// Not a valid Service URL -> continue
 			} finally {
 				finishResponse(response);
+			}
+			if (statuscode == 200) { // OK
+				Log.i(TAG, "Last known Service URL is valid.");
+				return mLastKnownServiceURL;
+			} else if (statuscode == 401) { // Not Authorized
+				throw new DatabaseException("Not authorized", statuscode);
 			}
 		}
 
@@ -122,38 +126,36 @@ public class ServiceFinder {
 			CheckConnection checkConnection = new CheckConnection(curURL, mCredsProvider);
 			futures.add(complService.submit(checkConnection));
 		}
-		
+
 		// get first result
-		for (int i = 0; i < range; i++) {
-			try {
+		try {
+			for (int i = 0; i < range; i++) {
 				String possibleResult = complService.take().get();
 				if (possibleResult != null) {
 					mLastKnownServiceURL = possibleResult;
 					mPreferences
 							.edit()
-							.putString(FundusApplication.LAST_KNOWN_URL_PREFERENCE,
-									mLastKnownServiceURL)
-							.commit();
+							.putString(
+									FundusApplication.LAST_KNOWN_URL_PREFERENCE,
+									mLastKnownServiceURL).commit();
 					Log.i(TAG, "Found WebService at: " + mLastKnownServiceURL);
 					return mLastKnownServiceURL;
 				}
-			} catch (ExecutionException e) {
-				// Ignore
-				break;
-			} catch (InterruptedException e) {
-				// Ignore
-				break;
-			} finally {
-				for (Future<String> curFuture : futures) {
-					if(!curFuture.isDone() && !curFuture.isCancelled()) {
-						curFuture.cancel(false);
-					}
+			}
+		} catch (ExecutionException e) {
+			// Ignore
+		} catch (InterruptedException e) {
+			// Ignore
+		} finally {
+			for (Future<String> curFuture : futures) {
+				if (!curFuture.isDone() && !curFuture.isCancelled()) {
+					curFuture.cancel(false);
 				}
 			}
 		}
 
 		Log.i(TAG, "Could not find Webservice");
-		throw new DatabaseException("Could not find Webservice");
+		throw new DatabaseException("Could not find Webservice", 404);
 	}
 
 	private static class CheckConnection implements Callable<String> {

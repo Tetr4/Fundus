@@ -56,6 +56,22 @@ public class ServiceConnection implements DatabaseConnection {
 
 		mFinder = new ServiceFinder(context, mClient, credsProvider);
 	}
+	
+	public boolean checkAuthorization() throws DatabaseException {
+		try {
+			mFinder.getServiceURL();
+		} catch (DatabaseException e) {
+			if(e.getStatusCode() == 401) {
+				// not authorized
+				return false;
+			} else {
+				// service not available
+				throw e;
+			}
+		}
+		// authorized
+		return true;
+	}
 
 	@Override
 	public List<Item> queryItemList() throws DatabaseException {
@@ -72,7 +88,7 @@ public class ServiceConnection implements DatabaseConnection {
 			default:
 				String statusMessage = response.getStatusLine()
 						.getReasonPhrase();
-				throw new DatabaseException(statusMessage);
+				throw new DatabaseException(statusMessage, statuscode);
 			}
 
 		} catch (IOException e) {
@@ -102,7 +118,7 @@ public class ServiceConnection implements DatabaseConnection {
 			default:
 				String statusMessage = response.getStatusLine()
 						.getReasonPhrase();
-				throw new DatabaseException(statusMessage);
+				throw new DatabaseException(statusMessage, statuscode);
 			}
 
 		} catch (IOException e) {
@@ -137,7 +153,7 @@ public class ServiceConnection implements DatabaseConnection {
 			default:
 				String statusMessage = response.getStatusLine()
 						.getReasonPhrase();
-				throw new DatabaseException(statusMessage);
+				throw new DatabaseException(statusMessage, statuscode);
 			}
 
 		} catch (IOException e) {
