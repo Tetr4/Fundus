@@ -136,6 +136,11 @@ public class ItemSelectActivity extends Activity {
 			public boolean onQueryTextSubmit(String query) {
 				mSearchView.clearFocus();
 				mListAdapter.filterItems(query);
+				// start ItemInfoActivity if exactly 1 Item is found
+				if(mListAdapter.getGroupCount() == 1 && mListAdapter.getChildrenCount(0) == 1) {
+					Item item = (Item) mListAdapter.getChild(0,0);
+					startItemInfoActivity(item.id);
+				}
 				return true;
 			}
 
