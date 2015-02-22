@@ -54,7 +54,7 @@ public class ServiceConnection implements DatabaseConnection {
 				new UsernamePasswordCredentials(user, pass));
 		mClient.setCredentialsProvider(credsProvider);
 
-		mFinder = new ServiceFinder(context, mClient, credsProvider);
+		mFinder = new ServiceFinder(context, credsProvider);
 	}
 	
 	public boolean checkAuthorization() throws DatabaseException {
