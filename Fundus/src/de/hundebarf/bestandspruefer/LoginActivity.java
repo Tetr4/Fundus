@@ -2,28 +2,28 @@ package de.hundebarf.bestandspruefer;
 
 import java.util.Set;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
+import de.hundebarf.bestandspruefer.collection.FundusAccount;
 import de.hundebarf.bestandspruefer.database.DatabaseConnection;
 import de.hundebarf.bestandspruefer.database.DatabaseException;
 import de.hundebarf.bestandspruefer.database.ServiceConnection;
 import de.hundebarf.bestandspruefer.database.tasks.DatabaseConnectionTask;
 
 public class LoginActivity extends Activity {
-	private static final String ACCOUNT_TYPE = "de.hundebarf";
-	private Account mAccount;
-	private AccountManager mAccountManager;
+	public static final String SWITCH_ACCOUNT = "SWITCH_ACCOUNT";
 
 	private Button mLoginButton;
-	private Button mSkipButton;
+	private Button mGuestButton;
 	private EditText mUserEditText;
 	private EditText mPasswordEditText;
 	private DatabaseConnectionTask<Boolean> mCheckAuthorizationTask;
@@ -31,30 +31,39 @@ public class LoginActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// check if skip login
-		FundusApplication app = (FundusApplication) getApplicationContext();
-		if (app.isSkipLogin()) {
-			startMainActivity();
-			return;
-		}
-
-		// check if already authorized
-		mAccountManager = AccountManager.get(this);
-		mAccount = getAccount();
-		if (mAccount != null /* && isAuthorized(mAccount) */) {
-			startMainActivity();
-			return;
-		}
-
-		// no account / not authorized -> login GUI
-		setContentView(R.layout.activity_login);
-		// Title can't be set in manifest, otherwise the launcher name changes
+		
+		// Workaround! Title can't be set in manifest, otherwise the launcher name changes
 		setTitle(R.string.activity_login_title);
-
+		
+		// check if user wants to login as other user -> disable autologin
+		boolean switchAccount = false;
+		if(getIntent().getExtras() != null) {
+			switchAccount = getIntent().getExtras().getBoolean(SWITCH_ACCOUNT);
+		}
+		if(!switchAccount) {
+			// check if already authorized
+			FundusAccount account = getAccount();
+			if (account != null /* && isAuthorized(account) */) {
+				startMainActivity();
+				return;
+			}
+		}
+		
+		// no account / not authorized / switch account -> login GUI
+		setContentView(R.layout.activity_login);
+		
 		mLoginButton = (Button) findViewById(R.id.button_login);
-		mSkipButton = (Button) findViewById(R.id.button_skip);
+		mGuestButton = (Button) findViewById(R.id.button_guest);
 		mUserEditText = (EditText) findViewById(R.id.edittext_user);
 		mPasswordEditText = (EditText) findViewById(R.id.edittext_password);
+		
+		mPasswordEditText.setOnEditorActionListener(new OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				handleLogin();
+				return true;
+			}
+		});
 
 		mLoginButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -63,10 +72,10 @@ public class LoginActivity extends Activity {
 			}
 		});
 
-		mSkipButton.setOnClickListener(new OnClickListener() {
+		mGuestButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				handleSkip();
+				handleGuestLogin();
 			}
 		});
 	}
@@ -85,7 +94,7 @@ public class LoginActivity extends Activity {
 			@Override
 			protected void onSuccess(Boolean authorized, DatabaseConnection con) {
 				if (authorized) {
-					createAccount(user, password);
+					useAccount(new FundusAccount(user, password));
 					startMainActivity();
 				} else {
 					showNotAuthorized();
@@ -102,14 +111,32 @@ public class LoginActivity extends Activity {
 					Set<DatabaseConnection> successfulConnections) {
 			}
 		};
-		mCheckAuthorizationTask.execute(new ServiceConnection(this, user,
-				password));
+		mCheckAuthorizationTask.execute(new ServiceConnection(this, user, password));
 	}
 
-	private void handleSkip() {
-		FundusApplication app = (FundusApplication) getApplicationContext();
-		app.setSkipLogin(true);
+	private void handleGuestLogin() {
+		FundusApplication app = (FundusApplication) getApplication();
+		app.setAccount(null);
 		startMainActivity();
+	}
+	
+	private void useAccount(FundusAccount account) {
+//		AccountManager accountManager = AccountManager.get(this);
+//		Account account = new Account(user, ACCOUNT_TYPE);
+//		accountManager.addAccountExplicitly(account, password, null);
+		
+		FundusApplication app = (FundusApplication) getApplication();
+		app.setAccount(account);
+	}
+
+	private FundusAccount getAccount() {
+//		AccountManager accountManager = AccountManager.get(this);
+//		Account[] accounts = accountManager.getAccountsByType(ACCOUNT_TYPE);
+//		if (accounts.length > 0) {
+//			return accounts[0];
+//		}
+		FundusApplication app = (FundusApplication) getApplication();
+		return app.getAccount();
 	}
 
 	private void showServiceUnavailable() {
@@ -127,20 +154,6 @@ public class LoginActivity extends Activity {
 		Intent intent = new Intent(this, ItemSelectActivity.class);
 		startActivity(intent);
 		finish();
-	}
-
-	private Account getAccount() {
-		Account[] accounts = mAccountManager.getAccountsByType(ACCOUNT_TYPE);
-		if (accounts.length > 0) {
-			return accounts[0];
-		}
-		return null;
-	}
-
-	private void createAccount(String user, String password) {
-		Account account = new Account(user, ACCOUNT_TYPE);
-		mAccountManager.setPassword(account, password);
-		mAccountManager.addAccountExplicitly(account, password, null);
 	}
 
 	@Override

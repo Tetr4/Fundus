@@ -52,6 +52,6 @@
     <string name="edittext_user_hint">User</string>
     <string name="edittext_password_hint">Password</string>
     <string name="button_login">Login</string>
-    <string name="button_skip">Skip</string>
+    <string name="button_guest">Guest</string>
 
 </resources>
