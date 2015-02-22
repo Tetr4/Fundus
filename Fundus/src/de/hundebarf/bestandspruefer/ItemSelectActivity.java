@@ -51,23 +51,42 @@ public class ItemSelectActivity extends Activity {
 	// data loader
 	private DatabaseConnectionTask<List<Item>> mListTask;
 	private DatabaseConnection mCacheConnection;
-	private DatabaseConnection mRemoteConnection;
+	private DatabaseConnection mServiceConnection;
 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_select);
-		
-		mCacheConnection = new CacheConnection(this);
-		mRemoteConnection= new ServiceConnection(this);
-		
+
 		mTitle = getResources().getString(R.string.app_name);
 		
+
+		
 		initExpandableListView();
-		loadItemsAsync();
 		initSearchView();
 		initScanner();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		FundusApplication app = (FundusApplication) getApplication();
+		mServiceConnection= new ServiceConnection(this, app.getAccount());
+		mCacheConnection = new CacheConnection(this);
+		loadItemsAsync();
+		
+		if(mListTask != null) {
+			mListTask.onResume();
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if(mListTask != null) {
+			mListTask.onPause();
+		}
 	}
 
 	private void initExpandableListView() {
@@ -106,7 +125,7 @@ public class ItemSelectActivity extends Activity {
 			
 			@Override
 			protected void onFinished(Set<DatabaseConnection> successfulConnections) {
-				if(successfulConnections.contains(mRemoteConnection)) {
+				if(successfulConnections.contains(mServiceConnection)) {
 					hideOfflineMode();
 				} else if (successfulConnections.contains(mCacheConnection)) {
 					showOfflineMode();
@@ -115,7 +134,7 @@ public class ItemSelectActivity extends Activity {
 				}
 			}
 		};
-		mListTask.execute(mCacheConnection, mRemoteConnection);
+		mListTask.execute(mCacheConnection, mServiceConnection);
 	}
 
 	private void initSearchView() {
@@ -189,18 +208,6 @@ public class ItemSelectActivity extends Activity {
 				}
 			}
 		});
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		mListTask.onResume();
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		mListTask.onPause();
 	}
 
 	private void fillList(List<Item> items) {
@@ -316,9 +323,8 @@ public class ItemSelectActivity extends Activity {
 			break;
 			
 		case R.id.action_login:
-			FundusApplication app = (FundusApplication) getApplicationContext();
-			app.setSkipLogin(false);
 			Intent intent = new Intent(this, LoginActivity.class);
+			intent.putExtra(LoginActivity.SWITCH_ACCOUNT, true);
 			startActivity(intent);
 			break;
 

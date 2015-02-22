@@ -37,7 +37,7 @@ public class ItemInfoActivity extends Activity {
 	private int mItemID;
 	
 	private CacheConnection mCacheConnection;
-	private ServiceConnection mRemoteConnection;
+	private ServiceConnection mServiceConnection;
 	private DatabaseConnectionTask<Item> mItemTask;
 	private DatabaseConnectionTask<Integer> mUpdateQuantityTask;
 
@@ -54,8 +54,9 @@ public class ItemInfoActivity extends Activity {
 					"The item's ID has to be given as an extra with key 'ITEM_ID'");
 		}
 		
+		FundusApplication app = (FundusApplication) getApplication();
+		mServiceConnection= new ServiceConnection(this, app.getAccount());
 		mCacheConnection = new CacheConnection(this);
-		mRemoteConnection = new ServiceConnection(this);
 		loadItemAsync(mItemID);
 		
 		initUpdateStockButton();
@@ -168,7 +169,7 @@ public class ItemInfoActivity extends Activity {
 			@Override
 			protected void onFinished(
 					Set<DatabaseConnection> successfulConnections) {
-				if (successfulConnections.contains(mRemoteConnection)) {
+				if (successfulConnections.contains(mServiceConnection)) {
 					hideOfflineMode();
 				} else if (successfulConnections.contains(mCacheConnection)) {
 					showOfflineMode();
@@ -177,7 +178,7 @@ public class ItemInfoActivity extends Activity {
 				}
 			}
 		};
-		mItemTask.execute(mCacheConnection, mRemoteConnection);
+		mItemTask.execute(mCacheConnection, mServiceConnection);
 	}
 
 	private void showOfflineMode() {
@@ -241,7 +242,7 @@ public class ItemInfoActivity extends Activity {
 					Set<DatabaseConnection> successfulConnections) {
 			}
 		};
-		mUpdateQuantityTask.execute(new ServiceConnection(this));
+		mUpdateQuantityTask.execute(mServiceConnection);
 	}
 
 	@Override

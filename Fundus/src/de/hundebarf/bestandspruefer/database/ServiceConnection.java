@@ -28,6 +28,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.util.Log;
+import de.hundebarf.bestandspruefer.collection.FundusAccount;
 import de.hundebarf.bestandspruefer.collection.Item;
 
 public class ServiceConnection implements DatabaseConnection {
@@ -35,10 +36,9 @@ public class ServiceConnection implements DatabaseConnection {
 	private static final int CONNECTION_TIMEOUT = 5000;
 	private DefaultHttpClient mClient;
 	private ServiceFinder mFinder;
-
-	public ServiceConnection(Context context) {
-		// FIXME Login
-		this(context, "Fundus", "1234");
+	
+	public ServiceConnection(Context context, FundusAccount account) {
+		this(context,account.getUser(), account.getPassword());
 	}
 
 	public ServiceConnection(Context context, String user, String pass) {
@@ -56,7 +56,7 @@ public class ServiceConnection implements DatabaseConnection {
 
 		mFinder = new ServiceFinder(context, credsProvider);
 	}
-	
+
 	public boolean checkAuthorization() throws DatabaseException {
 		try {
 			mFinder.getServiceURL();

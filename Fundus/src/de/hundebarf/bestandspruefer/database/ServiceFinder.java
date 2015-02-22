@@ -24,7 +24,6 @@ import org.apache.http.params.HttpParams;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -34,24 +33,18 @@ import de.hundebarf.bestandspruefer.FundusApplication;
 
 public class ServiceFinder {
 	private static final String TAG = ServiceFinder.class.getSimpleName();
-	private String mLastKnownServiceURL;
-	private SharedPreferences mPreferences;
 	private Context mContext;
 	private CredentialsProvider mCredsProvider;
 
 	public ServiceFinder(Context context, BasicCredentialsProvider credsProvider) {
 		mContext = context;
 		mCredsProvider = credsProvider;
-
-		// last known service url
-		mPreferences = context.getSharedPreferences(FundusApplication.PREFERENCES, Context.MODE_PRIVATE);
-		mLastKnownServiceURL = mPreferences.getString(FundusApplication.LAST_KNOWN_URL_PREFERENCE, null);
 	}
 
 	public String getServiceURL() throws DatabaseException {
 		if (!isWifiEnabled()) {
 			// connection to service requires local network
-			Log.i(TAG, "Wifi not connected");
+			Log.i(TAG, "Wifi not connected"); 
 			throw new DatabaseException("Wifi not connected");
 		}
 
@@ -63,12 +56,15 @@ public class ServiceFinder {
 		}
 
 		// check if last known url is valid
-		if (mLastKnownServiceURL != null) {
-			CheckConnection checkConnection = new CheckConnection(mLastKnownServiceURL, mCredsProvider);
+		// last known service url
+		FundusApplication app = (FundusApplication) mContext.getApplicationContext();
+		String lastKnownServiceURL = app.getLastKnownServiceURL();
+		if (lastKnownServiceURL != null) {
+			CheckConnection checkConnection = new CheckConnection(lastKnownServiceURL, mCredsProvider);
 			CheckConnectionResult result = checkConnection.call();
 			if (result.statuscode == 200) { // OK
 				Log.i(TAG, "Last known Service URL is valid.");
-				return mLastKnownServiceURL;
+				return lastKnownServiceURL;
 			} else if (result.statuscode == 401) { // Not Authorized
 				throw new DatabaseException("Not authorized", result.statuscode);
 			}
@@ -122,11 +118,10 @@ public class ServiceFinder {
 						curFuture.cancel(false);
 					}
 				}
-				mLastKnownServiceURL = possibleResult.url;
-				mPreferences.edit().putString(FundusApplication.LAST_KNOWN_URL_PREFERENCE, mLastKnownServiceURL)
-						.commit();
-				Log.i(TAG, "Found WebService at: " + mLastKnownServiceURL);
-				return mLastKnownServiceURL;
+				lastKnownServiceURL = possibleResult.url;
+				app.SetLastKnownServiceURL(lastKnownServiceURL);
+				Log.i(TAG, "Found WebService at: " + lastKnownServiceURL);
+				return lastKnownServiceURL;
 			}
 		}
 
