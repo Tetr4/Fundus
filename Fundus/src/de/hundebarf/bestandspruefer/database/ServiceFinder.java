@@ -62,11 +62,16 @@ public class ServiceFinder {
 		if (lastKnownServiceURL != null) {
 			CheckConnection checkConnection = new CheckConnection(lastKnownServiceURL, mCredsProvider);
 			CheckConnectionResult result = checkConnection.call();
-			if (result.statuscode == 200) { // OK
-				Log.i(TAG, "Last known Service URL is valid.");
-				return lastKnownServiceURL;
-			} else if (result.statuscode == 401) { // Not Authorized
-				throw new DatabaseException("Not authorized", result.statuscode);
+			if (result != null) {
+				// found a http server
+				if(result.statuscode == 200) { // OK
+					Log.i(TAG, "Last known Service URL is valid.");
+					return lastKnownServiceURL;
+				} else if (result.statuscode == 401) { // Not Authorized
+					throw new DatabaseException("Not authorized", result.statuscode);
+				} else {
+					// unknown Server or service problem
+				}
 			}
 		}
 
@@ -80,9 +85,8 @@ public class ServiceFinder {
 		ipAddress += ".";
 
 		// executor for parallel requests
-		// FIXME 255 threads maybe too much
 		int range = 255;
-		int nrThreads = range;
+		int nrThreads = range; // FIXME 255 threads maybe too much
 		ExecutorService executor = Executors.newFixedThreadPool(nrThreads);
 		CompletionService<CheckConnectionResult> complService = new ExecutorCompletionService<CheckConnectionResult>(
 				executor);
