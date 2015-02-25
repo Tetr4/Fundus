@@ -288,7 +288,7 @@ public class ScannerFragment extends Fragment {
 		}
 	}
 
-	private void collapseNoAnim() {
+	public void collapseNoAnim() {
 		// collapse panel instantaneously
 		LayoutParams lp = mScannerPanel.getLayoutParams();
 		lp.height = mScannerHeightCollapsed;
