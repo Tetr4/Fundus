@@ -51,5 +51,10 @@
         <item>Rabatt</item>
         <item>Lillycard</item>
     </string-array>
+    
+    <string-array name="valid_ssids">
+        <item >HundeBARF</item>
+        <item >BatCave</item>
+    </string-array>
 
 </resources>

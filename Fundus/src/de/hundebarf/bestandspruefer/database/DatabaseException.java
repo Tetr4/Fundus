@@ -27,6 +27,10 @@ public class DatabaseException extends Exception {
 		super(detailMessage, throwable);
 	}
 	
+	public DatabaseException(String detailMessage, int statusCode, Throwable throwable) {
+		super(detailMessage, throwable);
+	}
+	
 	public int getStatusCode() {
 		return mStatusCode;
 	}

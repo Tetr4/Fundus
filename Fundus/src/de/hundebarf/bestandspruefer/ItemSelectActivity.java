@@ -8,11 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,17 +29,12 @@ import android.widget.SearchView.OnQueryTextListener;
 import android.widget.Toast;
 import de.hundebarf.bestandspruefer.collection.Category;
 import de.hundebarf.bestandspruefer.collection.Item;
-import de.hundebarf.bestandspruefer.database.CacheConnection;
-import de.hundebarf.bestandspruefer.database.DatabaseConnection;
-import de.hundebarf.bestandspruefer.database.DatabaseException;
 import de.hundebarf.bestandspruefer.database.ServiceConnection;
-import de.hundebarf.bestandspruefer.database.tasks.DatabaseConnectionTask;
 import de.hundebarf.bestandspruefer.scanner.Decoder.OnDecodedCallback;
 import de.hundebarf.bestandspruefer.scanner.ScannerFragment;
 
 public class ItemSelectActivity extends Activity {
 	public static final String TAG = ItemSelectActivity.class.getSimpleName();
-	private String mTitle;
 
 	// Barcode Scanner
 	private ScannerFragment mScannerFragment;
@@ -48,21 +47,11 @@ public class ItemSelectActivity extends Activity {
 	private List<Category> mCategories = new ArrayList<Category>();
 	private Map<String, Integer> mBarcodeToItemID = new HashMap<String, Integer>();
 
-	// data loader
-	private DatabaseConnectionTask<List<Item>> mListTask;
-	private DatabaseConnection mCacheConnection;
-	private DatabaseConnection mServiceConnection;
-
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_select);
 
-		mTitle = getResources().getString(R.string.app_name);
-		
-
-		
 		initExpandableListView();
 		initSearchView();
 		initScanner();
@@ -71,22 +60,13 @@ public class ItemSelectActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		FundusApplication app = (FundusApplication) getApplication();
-		mServiceConnection= new ServiceConnection(this, app.getAccount());
-		mCacheConnection = new CacheConnection(this);
-		loadItemsAsync();
-		
-		if(mListTask != null) {
-			mListTask.onResume();
-		}
+		loadItems();
 	}
-
+	
 	@Override
 	protected void onPause() {
 		super.onPause();
-		if(mListTask != null) {
-			mListTask.onPause();
-		}
+		mScannerFragment.collapseNoAnim();
 	}
 
 	private void initExpandableListView() {
@@ -95,46 +75,30 @@ public class ItemSelectActivity extends Activity {
 		mExpandableListView.setAdapter(mListAdapter);
 		mExpandableListView.setOnChildClickListener(new OnChildClickListener() {
 			@Override
-			public boolean onChildClick(ExpandableListView parent, View v,
-					int groupPosition, int childPosition, long id) {
-				Item item = (Item) mListAdapter.getChild(groupPosition,
-						childPosition);
+			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+				Item item = (Item) mListAdapter.getChild(groupPosition, childPosition);
 				startItemInfoActivity(item.id);
 				return true;
 			}
 		});
 	}
 
-	private void loadItemsAsync() {
-		mListTask = new DatabaseConnectionTask<List<Item>>(this) {
+	private void loadItems() {
+		FundusApplication app = (FundusApplication) getApplication();
+		ServiceConnection serviceConnection = app.getServiceConnection();
+		serviceConnection.queryItemList(new Callback<List<Item>>() {
+
 			@Override
-			protected List<Item> executeQuery(DatabaseConnection connection)
-					throws DatabaseException {
-				return connection.queryItemList();
+			public void success(List<Item> items, Response response) {
+				fillList(items);
+				// TODO show age of items
 			}
-			
+
 			@Override
-			protected void onSuccess(List<Item> result, DatabaseConnection connection) {
-				fillList(result);
+			public void failure(RetrofitError error) {
+				showFailureLoadingData(error);
 			}
-			
-			@Override
-			protected void onFailure(DatabaseException e, DatabaseConnection connection) {
-				
-			}
-			
-			@Override
-			protected void onFinished(Set<DatabaseConnection> successfulConnections) {
-				if(successfulConnections.contains(mServiceConnection)) {
-					hideOfflineMode();
-				} else if (successfulConnections.contains(mCacheConnection)) {
-					showOfflineMode();
-				} else {
-					showFailureLoadingData(null);
-				}
-			}
-		};
-		mListTask.execute(mCacheConnection, mServiceConnection);
+		});
 	}
 
 	private void initSearchView() {
@@ -147,8 +111,7 @@ public class ItemSelectActivity extends Activity {
 		View searchPlate = mSearchView.findViewById(searchPlateId);
 		searchPlate.setBackgroundResource(R.drawable.edit_text_underline);
 
-		mSearchView.setSearchableInfo(searchManager
-				.getSearchableInfo(getComponentName()));
+		mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
 		mSearchView.setOnQueryTextListener(new OnQueryTextListener() {
 			@Override
@@ -156,8 +119,8 @@ public class ItemSelectActivity extends Activity {
 				mSearchView.clearFocus();
 				mListAdapter.filterItems(query);
 				// start ItemInfoActivity if exactly 1 Item is found
-				if(mListAdapter.getGroupCount() == 1 && mListAdapter.getChildrenCount(0) == 1) {
-					Item item = (Item) mListAdapter.getChild(0,0);
+				if (mListAdapter.getGroupCount() == 1 && mListAdapter.getChildrenCount(0) == 1) {
+					Item item = (Item) mListAdapter.getChild(0, 0);
 					startItemInfoActivity(item.id);
 				}
 				return true;
@@ -178,8 +141,7 @@ public class ItemSelectActivity extends Activity {
 
 	private void initScanner() {
 		mScannerButton = (ImageButton) findViewById(R.id.scanner_button);
-		mScannerFragment = (ScannerFragment) getFragmentManager()
-				.findFragmentById(R.id.scanner_fragment);
+		mScannerFragment = (ScannerFragment) getFragmentManager().findFragmentById(R.id.scanner_fragment);
 
 		mScannerFragment.setOnDecodedCallback(new OnDecodedCallback() {
 			@Override
@@ -190,10 +152,8 @@ public class ItemSelectActivity extends Activity {
 					startItemInfoActivity(id);
 				} else {
 					// show not recognized toast
-					String notRecognizedMessage = getResources().getString(
-							R.string.not_recognized_info);
-					Toast.makeText(ItemSelectActivity.this, notRecognizedMessage,
-							Toast.LENGTH_SHORT).show();
+					String notRecognizedMessage = getResources().getString(R.string.not_recognized_info);
+					Toast.makeText(ItemSelectActivity.this, notRecognizedMessage, Toast.LENGTH_SHORT).show();
 				}
 			}
 		});
@@ -212,14 +172,14 @@ public class ItemSelectActivity extends Activity {
 
 	private void fillList(List<Item> items) {
 		// disabled Categories as HashSet for fast checking
-		String[] disabledCategoriesArray = getResources().getStringArray(
-				R.array.disabled_categories);
+		String[] disabledCategoriesArray = getResources().getStringArray(R.array.disabled_categories);
 		Set<String> disabledCategories = new HashSet<String>();
 		Collections.addAll(disabledCategories, disabledCategoriesArray);
 
 		// associate items with categories and barcodes with ids
 		Map<String, List<Item>> categoryToItems = new HashMap<String, List<Item>>();
 		for (Item curItem : items) {
+			Log.d(TAG, "ID: " + curItem.id);
 			// disable some categories
 			if (disabledCategories.contains(curItem.category)) {
 				continue;
@@ -267,25 +227,13 @@ public class ItemSelectActivity extends Activity {
 		startActivity(intent);
 	}
 
-	private void showOfflineMode() {
-		// FIXME
-		getActionBar().setTitle(mTitle + " (offline)");
-	}
-	
-	private void hideOfflineMode() {
-		// FIXME
-		getActionBar().setTitle(mTitle);
-	}
-
-
-	private void showFailureLoadingData(DatabaseException e) {
+	private void showFailureLoadingData(Exception e) {
 		// FIXME
 		if (e != null) {
-			e.printStackTrace();
+			Log.d(TAG, "Could not load item list", e);
 			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
 		} else {
-			Toast.makeText(this, "Could not load item list", Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(this, "Could not load item list", Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -306,7 +254,7 @@ public class ItemSelectActivity extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		 getMenuInflater().inflate(R.menu.item_select, menu);
+		getMenuInflater().inflate(R.menu.item_select, menu);
 		return true;
 	}
 
@@ -314,14 +262,14 @@ public class ItemSelectActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
 		switch (id) {
-//		case R.id.action_add_item:
-//			startActivity(new Intent(this, ItemAddActivity.class));
-//			break;
-			
+		// case R.id.action_add_item:
+		// startActivity(new Intent(this, ItemAddActivity.class));
+		// break;
+
 		case R.id.action_refresh:
-			loadItemsAsync();
+			loadItems();
 			break;
-			
+
 		case R.id.action_login:
 			Intent intent = new Intent(this, LoginActivity.class);
 			intent.putExtra(LoginActivity.SWITCH_ACCOUNT, true);

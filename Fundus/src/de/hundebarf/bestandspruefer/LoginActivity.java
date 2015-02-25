@@ -1,7 +1,8 @@
 package de.hundebarf.bestandspruefer;
 
-import java.util.Set;
-
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,10 +15,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 import de.hundebarf.bestandspruefer.collection.FundusAccount;
-import de.hundebarf.bestandspruefer.database.DatabaseConnection;
-import de.hundebarf.bestandspruefer.database.DatabaseException;
 import de.hundebarf.bestandspruefer.database.ServiceConnection;
-import de.hundebarf.bestandspruefer.database.tasks.DatabaseConnectionTask;
 
 public class LoginActivity extends Activity {
 	public static final String SWITCH_ACCOUNT = "SWITCH_ACCOUNT";
@@ -26,7 +24,6 @@ public class LoginActivity extends Activity {
 	private Button mGuestButton;
 	private EditText mUserEditText;
 	private EditText mPasswordEditText;
-	private DatabaseConnectionTask<Boolean> mCheckAuthorizationTask;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +39,8 @@ public class LoginActivity extends Activity {
 		}
 		if(!switchAccount) {
 			// check if already authorized
-			FundusAccount account = getAccount();
+			FundusApplication app = (FundusApplication) getApplication();
+			FundusAccount account = app.getAccount();
 			if (account != null /* && isAuthorized(account) */) {
 				startMainActivity();
 				return;
@@ -81,37 +79,28 @@ public class LoginActivity extends Activity {
 	}
 
 	private void handleLogin() {
+		FundusApplication app = (FundusApplication) getApplication();
 		final String user = mUserEditText.getText().toString();
 		final String password = mPasswordEditText.getText().toString();
-
-		mCheckAuthorizationTask = new DatabaseConnectionTask<Boolean>(this) {
+		app.setAccount(new FundusAccount(user, password));
+		ServiceConnection serviceConnection = app.getServiceConnection();
+		serviceConnection.checkService(new Callback<Response>() {
+			
 			@Override
-			protected Boolean executeQuery(DatabaseConnection con)
-					throws DatabaseException {
-				return ((ServiceConnection) con).checkAuthorization();
+			public void success(Response response1, Response response2) {
+				startMainActivity();
 			}
-
+			
 			@Override
-			protected void onSuccess(Boolean authorized, DatabaseConnection con) {
-				if (authorized) {
-					useAccount(new FundusAccount(user, password));
-					startMainActivity();
-				} else {
+			public void failure(RetrofitError error) {
+				Response response = error.getResponse();
+				if(response != null && response.getStatus() == 401) {
 					showNotAuthorized();
+				} else {
+					showServiceUnavailable();
 				}
 			}
-
-			@Override
-			protected void onFailure(DatabaseException e, DatabaseConnection con) {
-				showServiceUnavailable();
-			}
-
-			@Override
-			protected void onFinished(
-					Set<DatabaseConnection> successfulConnections) {
-			}
-		};
-		mCheckAuthorizationTask.execute(new ServiceConnection(this, user, password));
+		});
 	}
 
 	private void handleGuestLogin() {
@@ -120,25 +109,6 @@ public class LoginActivity extends Activity {
 		startMainActivity();
 	}
 	
-	private void useAccount(FundusAccount account) {
-//		AccountManager accountManager = AccountManager.get(this);
-//		Account account = new Account(user, ACCOUNT_TYPE);
-//		accountManager.addAccountExplicitly(account, password, null);
-		
-		FundusApplication app = (FundusApplication) getApplication();
-		app.setAccount(account);
-	}
-
-	private FundusAccount getAccount() {
-//		AccountManager accountManager = AccountManager.get(this);
-//		Account[] accounts = accountManager.getAccountsByType(ACCOUNT_TYPE);
-//		if (accounts.length > 0) {
-//			return accounts[0];
-//		}
-		FundusApplication app = (FundusApplication) getApplication();
-		return app.getAccount();
-	}
-
 	private void showServiceUnavailable() {
 		// TODO String resource
 		Toast.makeText(this, "Service unavailable", Toast.LENGTH_SHORT).show();
@@ -154,22 +124,6 @@ public class LoginActivity extends Activity {
 		Intent intent = new Intent(this, ItemSelectActivity.class);
 		startActivity(intent);
 		finish();
-	}
-
-	@Override
-	protected void onPause() {
-		if (mCheckAuthorizationTask != null) {
-			mCheckAuthorizationTask.onPause();
-		}
-		super.onPause();
-	}
-
-	@Override
-	protected void onResume() {
-		if (mCheckAuthorizationTask != null) {
-			mCheckAuthorizationTask.onResume();
-		}
-		super.onResume();
 	}
 
 }
