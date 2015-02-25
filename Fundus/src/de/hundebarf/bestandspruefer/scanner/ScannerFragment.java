@@ -214,7 +214,7 @@ public class ScannerFragment extends Fragment {
 				mScannerView.setVisibility(View.VISIBLE);
 				mTargetReticle.setVisibility(View.VISIBLE);
 			}
-		}.execute();
+		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
 	private void stopCamera() {
