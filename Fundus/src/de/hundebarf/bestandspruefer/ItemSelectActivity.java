@@ -179,7 +179,6 @@ public class ItemSelectActivity extends Activity {
 		// associate items with categories and barcodes with ids
 		Map<String, List<Item>> categoryToItems = new HashMap<String, List<Item>>();
 		for (Item curItem : items) {
-			Log.d(TAG, "ID: " + curItem.id);
 			// disable some categories
 			if (disabledCategories.contains(curItem.category)) {
 				continue;
