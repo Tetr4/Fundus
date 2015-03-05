@@ -50,6 +50,7 @@ public class ItemSelectActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_select);
 		
+		
 		initExpandableListView();
 		initSearchView();
 		initScanner();
@@ -252,10 +253,10 @@ public class ItemSelectActivity extends BaseActivity {
 		// case R.id.action_add_item:
 		// startActivity(new Intent(this, ItemAddActivity.class));
 		// break;
-
+		
 		case R.id.action_refresh:
 			loadItems();
-			break;
+			return true;
 
 		case R.id.action_login:
 			Intent intent = new Intent(this, LoginActivity.class);
@@ -263,12 +264,10 @@ public class ItemSelectActivity extends BaseActivity {
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 			intent.putExtra(LoginActivity.SWITCH_ACCOUNT, true);
 			startActivity(intent);
-			break;
+			return true;
 
 		default:
-			break;
+			return super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
 	}
-
 }
