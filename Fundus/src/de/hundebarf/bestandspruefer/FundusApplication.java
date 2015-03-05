@@ -146,18 +146,18 @@ public class FundusApplication extends Application {
 			}
 		};
 		
-		// Error Handler
-		ErrorHandler errorHandler = new ErrorHandler() {
-			@Override
-			public Throwable handleError(RetrofitError cause) {
-				Response response = cause.getResponse();
-				if (response != null && response.getStatus() == 401) {
-					// 401 Unauthorized -> logout
-					setAccount(null);
-				}
-				return cause;
-			}
-		};
+//		// Error Handler
+//		ErrorHandler errorHandler = new ErrorHandler() {
+//			@Override
+//			public Throwable handleError(RetrofitError cause) {
+//				Response response = cause.getResponse();
+//				if (response != null && response.getStatus() == 401) {
+//					// 401 Unauthorized -> logout
+//					setAccount(null);
+//				}
+//				return cause;
+//			}
+//		};
 		
 		// Endpoint
 		mEndpoint = new Endpoint() {
@@ -177,7 +177,7 @@ public class FundusApplication extends Application {
 				.setLogLevel(RestAdapter.LogLevel.FULL)
 				.setClient(new OkClient(okHttpClient))
 				.setRequestInterceptor(interceptor)
-				.setErrorHandler(errorHandler)	
+//				.setErrorHandler(errorHandler)	
 				.build();
 		
 		return restAdapter.create(ServiceConnection.class);

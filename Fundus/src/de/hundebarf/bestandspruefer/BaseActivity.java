@@ -45,6 +45,8 @@ public class BaseActivity extends Activity {
 			switch (error.getResponse().getStatus()) {
 			case 401: // Unauthorized -> logout
 				Intent loginIntent = new Intent(BaseActivity.this, LoginActivity.class);
+				loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				loginIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 				startActivity(loginIntent);
 				return;
 			}

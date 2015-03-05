@@ -259,6 +259,8 @@ public class ItemSelectActivity extends BaseActivity {
 
 		case R.id.action_login:
 			Intent intent = new Intent(this, LoginActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 			intent.putExtra(LoginActivity.SWITCH_ACCOUNT, true);
 			startActivity(intent);
 			break;
