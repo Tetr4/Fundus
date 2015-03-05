@@ -15,7 +15,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -95,7 +94,7 @@ public class ItemSelectActivity extends BaseActivity {
 
 			@Override
 			public void failure(RetrofitError error) {
-				showFailureLoadingData(error);
+				handleError(error);
 			}
 		});
 	}
@@ -224,17 +223,7 @@ public class ItemSelectActivity extends BaseActivity {
 		intent.putExtra(ItemInfoActivity.ITEM_ID, id);
 		startActivity(intent);
 	}
-
-	private void showFailureLoadingData(Exception e) {
-		// FIXME
-		if (e != null) {
-			Log.d(TAG, "Could not load item list", e);
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-		} else {
-			Toast.makeText(this, "Could not load item list", Toast.LENGTH_SHORT).show();
-		}
-	}
-
+	
 	private void expandAllCategories() {
 		mExpandableListView.smoothScrollToPosition(0);
 		int groupCount = mListAdapter.getGroupCount();

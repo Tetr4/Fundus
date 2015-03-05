@@ -20,7 +20,6 @@ import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 import de.hundebarf.bestandspruefer.collection.Item;
 import de.hundebarf.bestandspruefer.database.ServiceConnection;
 
@@ -142,31 +141,10 @@ public class ItemInfoActivity extends BaseActivity {
 
 			@Override
 			public void failure(RetrofitError error) {
-				showFailureLoadingData(error);
+				handleError(error);
+				finish();
 			}
 		});
-	}
-
-	private void showFailureLoadingData(Exception e) {
-		// FIXME
-		if (e != null) {
-			e.printStackTrace();
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-		} else {
-			Toast.makeText(this, "Could not load item", Toast.LENGTH_SHORT).show();
-		}
-		finish();
-	}
-
-	private void showFailureUpdatingQuantity(Exception e) {
-		// FIXME
-		if (e != null) {
-			e.printStackTrace();
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-		} else {
-			Toast.makeText(this, "Could not update quantity", Toast.LENGTH_SHORT).show();
-		}
-		finish();
 	}
 
 	private void updateQuantity(int itemId, final int quantity) {
@@ -181,8 +159,8 @@ public class ItemInfoActivity extends BaseActivity {
 
 			@Override
 			public void failure(RetrofitError error) {
-				showFailureUpdatingQuantity(error);
-
+				handleError(error);
+				finish();
 			}
 		});
 	}
