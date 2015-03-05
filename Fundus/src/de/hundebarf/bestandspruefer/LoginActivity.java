@@ -38,11 +38,14 @@ public class LoginActivity extends Activity {
 		mGuestButton = (Button) findViewById(R.id.button_guest);
 		mUserEditText = (EditText) findViewById(R.id.edittext_user);
 		mPasswordEditText = (EditText) findViewById(R.id.edittext_password);
-		
+
+		// fill with last user/password
 		FundusApplication app = (FundusApplication) getApplication();
 		FundusAccount account = app.getAccount();
 		mUserEditText.setText(account.getUser());
+		mUserEditText.setSelection(mUserEditText.getText().length()); // move cursor
 		mPasswordEditText.setText(account.getPassword());
+		mPasswordEditText.setSelection(mPasswordEditText.getText().length());
 		
 		mPasswordEditText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
