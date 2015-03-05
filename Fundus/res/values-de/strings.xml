@@ -53,5 +53,7 @@
     <string name="edittext_password_hint">Passwort</string>
     <string name="button_login">Login</string>
     <string name="button_guest">Gastlogin</string>
+    <string name="error_not_authorized">Falsche Name oder Passwort</string>
+    <string name="error_user_required">Benutzername benötigt</string>
 
 </resources>

@@ -6,7 +6,6 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Dialog;
@@ -25,7 +24,7 @@ import android.widget.Toast;
 import de.hundebarf.bestandspruefer.collection.Item;
 import de.hundebarf.bestandspruefer.database.ServiceConnection;
 
-public class ItemInfoActivity extends Activity {
+public class ItemInfoActivity extends BaseActivity {
 	public static final String ITEM_ID = "ITEM_ID";
 	private static final int NUMBERPICKER_MAX_VALUE = 9999;
 	private Dialog mQuantityDialog;

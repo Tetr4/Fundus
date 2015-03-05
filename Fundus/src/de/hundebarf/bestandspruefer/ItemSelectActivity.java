@@ -11,7 +11,6 @@ import java.util.Set;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -33,7 +32,7 @@ import de.hundebarf.bestandspruefer.database.ServiceConnection;
 import de.hundebarf.bestandspruefer.scanner.Decoder.OnDecodedCallback;
 import de.hundebarf.bestandspruefer.scanner.ScannerFragment;
 
-public class ItemSelectActivity extends Activity {
+public class ItemSelectActivity extends BaseActivity {
 	public static final String TAG = ItemSelectActivity.class.getSimpleName();
 
 	// Barcode Scanner
@@ -51,7 +50,7 @@ public class ItemSelectActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_select);
-
+		
 		initExpandableListView();
 		initSearchView();
 		initScanner();

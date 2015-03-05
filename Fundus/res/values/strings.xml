@@ -53,5 +53,7 @@
     <string name="edittext_password_hint">Password</string>
     <string name="button_login">Login</string>
     <string name="button_guest">Guest</string>
+    <string name="error_not_authorized">Not Authorized</string>
+    <string name="error_user_required">User required</string>
 
 </resources>

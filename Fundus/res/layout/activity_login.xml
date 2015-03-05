@@ -60,29 +60,26 @@
     
     <!-- Buttons -->
     <LinearLayout
-        style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal" >
+        android:orientation="horizontal" 
+        style="?android:attr/buttonBarStyle" >
 
         <Button
             android:id="@+id/button_login"
-            style="?android:attr/buttonBarButtonStyle"
+            android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?android:attr/selectableItemBackground"
-            android:text="@string/button_login" /> 
+            android:text="@string/button_login"
+            style="?android:borderlessButtonStyle" />
 
         <Button
             android:id="@+id/button_guest"
-            style="?android:attr/buttonBarButtonStyle"
+            android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?android:attr/selectableItemBackground"
-            android:text="@string/button_guest" />
+            android:text="@string/button_guest" 
+            style="?android:borderlessButtonStyle" />
     </LinearLayout>
 
 </LinearLayout>

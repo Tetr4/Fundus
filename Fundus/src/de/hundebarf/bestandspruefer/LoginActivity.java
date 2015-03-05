@@ -4,7 +4,6 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -24,36 +23,25 @@ public class LoginActivity extends Activity {
 	private Button mGuestButton;
 	private EditText mUserEditText;
 	private EditText mPasswordEditText;
+	
+	// TODO Resource
+	private final FundusAccount mGuestAccount = new FundusAccount("Fundus", "1234");
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		// Workaround! Title can't be set in manifest, otherwise the launcher name changes
-		setTitle(R.string.activity_login_title);
-		
-		// check if user wants to login as other user -> disable autologin
-		boolean switchAccount = false;
-		if(getIntent().getExtras() != null) {
-			switchAccount = getIntent().getExtras().getBoolean(SWITCH_ACCOUNT);
-		}
-		if(!switchAccount) {
-			// check if already authorized
-			FundusApplication app = (FundusApplication) getApplication();
-			FundusAccount account = app.getAccount();
-			if (account != null /* && isAuthorized(account) */) {
-				startMainActivity();
-				return;
-			}
-		}
-		
-		// no account / not authorized / switch account -> login GUI
 		setContentView(R.layout.activity_login);
 		
 		mLoginButton = (Button) findViewById(R.id.button_login);
 		mGuestButton = (Button) findViewById(R.id.button_guest);
 		mUserEditText = (EditText) findViewById(R.id.edittext_user);
 		mPasswordEditText = (EditText) findViewById(R.id.edittext_password);
+		
+		FundusApplication app = (FundusApplication) getApplication();
+		FundusAccount account = app.getAccount();
+		mUserEditText.setText(account.getUser());
+		mPasswordEditText.setText(account.getPassword());
 		
 		mPasswordEditText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
@@ -79,16 +67,40 @@ public class LoginActivity extends Activity {
 	}
 
 	private void handleLogin() {
+		// reset errors
+		mUserEditText.setError(null);
+		mPasswordEditText.setError(null);
+		
 		FundusApplication app = (FundusApplication) getApplication();
-		final String user = mUserEditText.getText().toString();
-		final String password = mPasswordEditText.getText().toString();
+		String user = mUserEditText.getText().toString();
+		String password = mPasswordEditText.getText().toString();
+		
+		if (user.isEmpty()) {
+			mUserEditText.setError(getString(R.string.error_user_required));
+			mUserEditText.requestFocus();
+			return;
+		}
+		
 		app.setAccount(new FundusAccount(user, password));
+		attemptLogin();
+	}
+	
+	private void handleGuestLogin() {
+		FundusApplication app = (FundusApplication) getApplication();
+		app.setAccount(mGuestAccount);
+		mUserEditText.setText(mGuestAccount.getUser());
+		mPasswordEditText.setText(mGuestAccount.getPassword());
+		attemptLogin();
+	}
+	
+	private void attemptLogin() {
+		FundusApplication app = (FundusApplication) getApplication();
 		ServiceConnection serviceConnection = app.getServiceConnection();
 		serviceConnection.checkService(new Callback<Response>() {
 			
 			@Override
 			public void success(Response response1, Response response2) {
-				startMainActivity();
+				onAuthorized();
 			}
 			
 			@Override
@@ -103,12 +115,10 @@ public class LoginActivity extends Activity {
 		});
 	}
 
-	private void handleGuestLogin() {
-		FundusApplication app = (FundusApplication) getApplication();
-		app.setAccount(null);
-		startMainActivity();
+	private void onAuthorized() {
+		finish();
 	}
-	
+
 	private void showServiceUnavailable() {
 		// TODO String resource
 		Toast.makeText(this, "Service unavailable", Toast.LENGTH_SHORT).show();
@@ -116,14 +126,8 @@ public class LoginActivity extends Activity {
 	}
 
 	private void showNotAuthorized() {
-		// TODO String resource
-		Toast.makeText(this, "Not authorized", Toast.LENGTH_SHORT).show();
-	}
-
-	private void startMainActivity() {
-		Intent intent = new Intent(this, ItemSelectActivity.class);
-		startActivity(intent);
-		finish();
+		mPasswordEditText.setError(getString(R.string.error_not_authorized));
+		mPasswordEditText.requestFocus();
 	}
 
 }

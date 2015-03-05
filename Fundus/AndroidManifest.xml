@@ -50,7 +50,12 @@
             android:name=".ItemSelectActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
-            android:launchMode="singleInstance"/>
+            android:launchMode="singleInstance" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ItemInfoActivity"
             android:configChanges="orientation|screenSize"
@@ -64,12 +69,9 @@
             android:parentActivityName=".ItemSelectActivity" />
         <activity
             android:name=".LoginActivity"
+            android:label="@string/activity_login_title"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleInstance" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 
