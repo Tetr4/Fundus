@@ -99,7 +99,7 @@ public class ItemInfoActivity extends BaseActivity {
 		mQuantityDialog.show();
 
 		// colorize
-		int dialogColor = getResources().getColor(R.color.green);
+		int dialogColor = getResources().getColor(R.color.fundus_green);
 
 		// Title Color
 		int titleTextViewId = mQuantityDialog.getContext().getResources()

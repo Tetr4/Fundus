@@ -2,12 +2,13 @@
 
     <style name="AppTheme" parent="android:Theme.Holo.Light">
         <item name="android:actionBarStyle">@style/FundusActionBar</item>
-        <item name="android:divider">@color/green</item>
-        <item name="android:textColorHighlight">@color/green</item>
+        <item name="android:divider">@color/fundus_green</item>
+        <item name="android:textColorHighlight">@color/fundus_green</item>
         <item name="android:textSelectHandleLeft">@drawable/text_select_handle_left</item>
 		<item name="android:textSelectHandleRight">@drawable/text_select_handle_right</item>
 		<item name="android:textSelectHandle">@drawable/text_select_handle_middle</item>
         <item name="android:editTextBackground">@drawable/edit_text_underline</item>
+        <item name="android:windowBackground">@color/background</item>
     </style>
     
     <style name="FundusActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">

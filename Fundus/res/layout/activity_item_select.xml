@@ -4,12 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="@color/activity_background"
     android:gravity="center_horizontal"
     android:orientation="vertical"
     tools:context="de.hundebarf.bestandspruefer.ItemSelectActivity"
     tools:ignore="MergeRootFrame" >
 
+    <!-- Scanner -->
     <fragment
         android:id="@+id/scanner_fragment"
         android:name="de.hundebarf.bestandspruefer.scanner.ScannerFragment"
@@ -29,6 +29,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
 
+            <!-- Searchview -->
             <SearchView
                 android:id="@+id/search_view"
                 android:layout_width="0dp"
@@ -40,15 +41,18 @@
                 android:iconifiedByDefault="false"
                 android:queryHint="@string/searchview_query_hint" />
 
+            <!-- Scannerbutton -->
             <ImageButton
                 android:id="@+id/scanner_button"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:background="@drawable/scanner_button"
-                android:contentDescription="@string/camera_button"
+                android:contentDescription="@string/scanner_button"
                 android:scaleType="centerCrop" />
         </LinearLayout>
 
+        
+        <!-- Itemlist -->
         <ExpandableListView
             android:id="@+id/expandable_list_view"
             android:layout_width="match_parent"

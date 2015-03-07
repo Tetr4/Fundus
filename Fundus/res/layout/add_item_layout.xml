@@ -24,10 +24,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:paddingEnd="10dip"
             android:paddingLeft="0dip"
-            android:paddingRight="10dip"
-            android:paddingStart="0dip" />
+            android:paddingRight="10dip"/>
 
         <ImageView
             android:id="@+id/delete_button"
@@ -35,7 +33,8 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
             android:padding="8dip"
-            android:src="@drawable/ic_delete" />
+            android:src="@drawable/ic_delete"
+            android:contentDescription="TODO"/>
  
     </LinearLayout>
 </LinearLayout>

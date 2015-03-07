@@ -2,13 +2,13 @@
 
     <item android:state_pressed="true">
         <shape android:shape="oval">
-            <solid android:color="@color/add_button_selected" />
+            <solid android:color="@color/bottom_bar_button_selected" />
         </shape>
     </item>
     
     <item>
         <shape android:shape="oval">
-            <solid android:color="@color/add_button_normal" />
+            <solid android:color="@color/bottom_bar_button_normal" />
         </shape>
     </item>
 

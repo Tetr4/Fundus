@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="selectable_units">
+        <item>Stück</item>
+        <item>g</item>
+        <item>ml</item>
+        <item>cm</item>
+    </string-array>
+    
+    <string-array name="selectable_sizes">
+        <item>xs</item>
+        <item>s</item>
+        <item>m</item>
+        <item>l</item>
+        <item>xl</item>
+        <item>xxl</item>
+    </string-array>
+    
+    <string-array name="disabled_categories">
+        <item>Gutscheine</item>
+        <item>Ostern</item>
+        <item>Valentinstag</item>
+        <item>Weihnachten</item>
+        <item>Halloween</item>
+        <item>Rabatt</item>
+        <item>Lillycard</item>
+    </string-array>
+     
+    <string-array name="selectable_categories">
+        <item>Accessoires</item>
+        <item>Bücher</item>
+        <item>Coaching</item>
+        <item>Dosen</item>
+        <item>Ergänzungsmittel</item>
+        <item>Frostfleisch</item>
+        <item>Gutscheine</item>
+        <item>Hundekekse</item>
+        <item>Joy</item>
+        <item>Kauartikel</item>
+        <item>Leinen und Halsbänder</item>
+        <item>Näpfe</item>
+        <item>Ostern</item>
+        <item>Pflegeprodukte</item>
+        <item>Rohfleisch</item>
+        <item>Sonstige</item>
+        <item>Trockengemüse</item>
+        <item>Valentinstag</item>
+        <item>Weihnachten</item>
+        <item>Halloween</item>
+        <item>Rabatt</item>
+        <item>Lillycard</item>
+    </string-array>
+    
+    <string-array name="valid_ssids">
+        <item >HundeBARF</item>
+        <item >BatCave</item>
+    </string-array>
+
+</resources>

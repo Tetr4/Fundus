@@ -11,9 +11,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-public class BaseActivity extends Activity {
+public abstract class BaseActivity extends Activity {
 
-	private static final String TAG = BaseActivity.class.getSimpleName();
+	protected static final String TAG = BaseActivity.class.getSimpleName();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +51,7 @@ public class BaseActivity extends Activity {
 				return;
 			}
 		}
-		Log.e(TAG, "Retrofit error", error);
+		Log.w(TAG, "Retrofit error", error);
 		Toast.makeText(this, "Service not available", Toast.LENGTH_LONG).show();
 	}
 

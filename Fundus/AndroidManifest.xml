@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.hundebarf.bestandspruefer"
     android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionName="1.0"
+    xmlns:tools="http://schemas.android.com/tools" >
 
     <uses-sdk
         android:minSdkVersion="16"

@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="add_button_bar">#66010102</color>
-    <color name="add_button_normal">#606060</color>
-    <color name="add_button_selected">#909090</color>
-    
     <color name="bottom_bar_top">#cc9fcd46</color>
     <color name="bottom_bar_bottom">#9fcd46</color>
+    <color name="bottom_bar_button_normal">#606060</color>
+    <color name="bottom_bar_button_selected">#909090</color>
     
     <color name="action_bar_top">#88c4e18f</color>
     <color name="action_bar_bottom">#9fcd46</color>
     
-    <color name="green">#9fcd46</color>
+    <color name="fundus_green">#9fcd46</color>
     
-    <color name="activity_background">#eeede4</color>
+    <color name="background">#eeede4</color>
     
     <color name="scanner_frame_border">#DDDDDD</color>
     <color name="scanner_frame">#AAAAAA</color>

@@ -7,10 +7,9 @@
     <string name="action_login">Login</string>
 
     <!-- ItemSelectActivity -->
-    <string name="camera_button">Barcode scannen</string>
+    <string name="scanner_button">Barcode scannen</string>
     <string name="searchview_query_hint"></string>
     <string name="not_recognized_info">Barcode nicht in Datenbank</string>
-    <string name="query_info">Verbinde mit Datenbank…</string>
 
     <!-- ItemAddActivity -->
     <string name="activity_add_title">Gegenstand hinzufügen</string>
