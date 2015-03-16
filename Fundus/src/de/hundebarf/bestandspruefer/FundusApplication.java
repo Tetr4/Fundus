@@ -5,12 +5,9 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import retrofit.Endpoint;
-import retrofit.ErrorHandler;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
-import retrofit.RetrofitError;
 import retrofit.client.OkClient;
-import retrofit.client.Response;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -44,13 +41,6 @@ public class FundusApplication extends Application {
 	@Override
 	public void onCreate() {
 		mPreferences = getSharedPreferences(FUNDUS_PREFERENCES, MODE_PRIVATE);
-		
-// quick reset:
-//		mPreferences.edit()
-//				.remove(LAST_KNOWN_URL_PREFERENCE)
-//				.remove(USER_PREFERENCE)
-//				.remove(PASSWORD_PREFERENCE)
-//				.commit();
 		
 		// Service URL
 		mServiceURL = mPreferences.getString(FundusApplication.SERVICE_URL_PREFERENCE, mServiceURL);
@@ -128,36 +118,22 @@ public class FundusApplication extends Application {
 				request.addHeader("Authorization", credentials);
 
 //				// caching
-	            	
 	            if(mServiceHelper.isSSIDValid()) {
-	            		// success
-	            		// skip cache, force full refresh
-//	            		request.addHeader("Cache-Control", "no-cache");
-		                int maxAge = 60; // read from cache for 1 minute
-		                request.addHeader("Cache-Control", "public, max-age=" + maxAge);
+            		// success
+            		// skip cache, force full refresh
+	            	request.addHeader("Cache-Control", "no-cache");
+	                int maxAge = 60; // read from cache for 1 minute
+	                request.addHeader("Cache-Control", "public, max-age=" + maxAge);
 	            } else {
 	            	Log.i(TAG, "SSID is not valid");
-//		            // force cache
-//	            request.addHeader("Cache-Control", "only-if-cached");
-                int maxStale = 60 * 60 * 24 * 28; // tolerate 4-weeks stale
-                request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + maxStale);
+		            // force cache
+	            	request.addHeader("Cache-Control", "only-if-cached");
+	            	int maxStale = 60 * 60 * 24 * 28; // tolerate 4-weeks stale
+	            	request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + maxStale);
 	            }
 
 			}
 		};
-		
-//		// Error Handler
-//		ErrorHandler errorHandler = new ErrorHandler() {
-//			@Override
-//			public Throwable handleError(RetrofitError cause) {
-//				Response response = cause.getResponse();
-//				if (response != null && response.getStatus() == 401) {
-//					// 401 Unauthorized -> logout
-//					setAccount(null);
-//				}
-//				return cause;
-//			}
-//		};
 		
 		// Endpoint
 		mEndpoint = new Endpoint() {
@@ -174,10 +150,9 @@ public class FundusApplication extends Application {
 		// Build RestAdapter
 		RestAdapter restAdapter = new RestAdapter.Builder()
 				.setEndpoint(mEndpoint)
-				.setLogLevel(RestAdapter.LogLevel.FULL)
+//				.setLogLevel(RestAdapter.LogLevel.FULL)
 				.setClient(new OkClient(okHttpClient))
 				.setRequestInterceptor(interceptor)
-//				.setErrorHandler(errorHandler)	
 				.build();
 		
 		return restAdapter.create(ServiceConnection.class);
