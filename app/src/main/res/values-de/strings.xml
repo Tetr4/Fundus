@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Fundus</string>
+    <string name="action_add_item">Neuen Gegenstand hinzufügen</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_login">Login</string>
+
+    <!-- ItemSelectActivity -->
+    <string name="scanner_button">Barcode scannen</string>
+    <string name="searchview_query_hint"> </string>
+    <string name="not_recognized_info">Barcode nicht in Datenbank</string>
+
+    <!-- ItemAddActivity -->
+    <string name="activity_add_title">Gegenstand hinzufügen</string>
+    <string name="empty_fields_warning">Bitte fülle alle Felder aus.</string>
+    <string name="add_button">Gegenstand hinzufügen</string>
+
+    <!-- ItemInfoActivity -->
+    <string name="item_id">Datenbank-ID</string>
+    <string name="item_name">Name</string>
+    <string name="item_name_hint">Blättermagen</string>
+    <string name="item_shortname">Kurzname</string>
+    <string name="item_shortname_hint">Blättermagen</string>
+    <string name="item_category">Warengruppe</string>
+    <string name="item_category_prompt">Warengruppe</string>
+    <string name="item_barcode">Barcode</string>
+    <string name="item_barcode_hint">1234567</string>
+    <string name="item_quantitycontent">Inhalt</string>
+    <string name="item_quantitycontent_hint">500</string>
+    <string name="item_unit_prompt">Einheit</string>
+    <string name="item_size">Größe</string>
+    <string name="item_size_prompt">Größe</string>
+    <string name="item_description">Beschreibung</string>
+    <string name="item_description_hint">Beschreibung</string>
+    <string name="item_sellingprice">Verkaufspreis</string>
+    <string name="item_sellingprice_hint">6.90 €</string>
+    <string name="item_buyingprice">Einkaufspreis</string>
+    <string name="item_buyingprice_hint">5.00 €</string>
+    <string name="item_tax">Steuergruppe</string>
+    <string name="item_tax_hint">A</string>
+    <string name="item_supplier">Lieferant</string>
+    <string name="item_supplier_hint">Pegasus</string>
+    <string name="item_quantity">Bestand</string>
+    <string name="edit_quantity">Neuer Bestand</string>
+    <string name="edit_quantity_button_content">Bestand bearbeiten</string>
+
+    <!-- LoginActivity -->
+    <string name="activity_login_title">Login</string>
+    <string name="login_image_content">Fundus</string>
+    <string name="edittext_user_hint">Benutzername</string>
+    <string name="edittext_password_hint">Passwort</string>
+    <string name="button_login">Login</string>
+    <string name="button_guest">Gastlogin</string>
+    <string name="error_not_authorized">Falscher Name oder Passwort</string>
+    <string name="error_user_required">Benutzername benötigt</string>
+
+</resources>

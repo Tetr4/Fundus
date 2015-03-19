@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="de.hundebarf.fundus.ItemSelectActivity" >
+
+    <item
+        android:id="@+id/action_refresh"
+        android:icon="@drawable/ic_action_refresh"
+        android:orderInCategory="8"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_refresh"/>
+
+</menu>
