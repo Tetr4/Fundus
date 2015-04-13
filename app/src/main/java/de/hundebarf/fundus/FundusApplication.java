@@ -33,8 +33,8 @@ public class FundusApplication extends Application {
 	private ServiceConnection mServiceConnection;
 	private Endpoint mEndpoint;
 	private ServiceHelper mServiceHelper;
-	public static final String SERVICE_URI = "bestand";
-	private String mServiceURL = "http://192.168.178.9";
+	//private String mServiceURL = "http://192.168.178.9";
+    private String mServiceURL = "http://192.168.42.25";
 
 	private FundusAccount mAccount;
 
@@ -118,19 +118,19 @@ public class FundusApplication extends Application {
 				request.addHeader("Authorization", credentials);
 
 //				// caching
-	            if(mServiceHelper.isSSIDValid()) {
-            		// success
-            		// skip cache, force full refresh
-	            	request.addHeader("Cache-Control", "no-cache");
-	                int maxAge = 60; // read from cache for 1 minute
-	                request.addHeader("Cache-Control", "public, max-age=" + maxAge);
-	            } else {
-	            	Log.i(TAG, "SSID is not valid");
-		            // force cache
-	            	request.addHeader("Cache-Control", "only-if-cached");
-	            	int maxStale = 60 * 60 * 24 * 28; // tolerate 4-weeks stale
-	            	request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + maxStale);
-	            }
+//	            if(mServiceHelper.isSSIDValid()) {
+//            		// success
+//            		// skip cache, force full refresh
+//	            	request.addHeader("Cache-Control", "no-cache");
+//	                int maxAge = 60; // read from cache for 1 minute
+//	                request.addHeader("Cache-Control", "public, max-age=" + maxAge);
+//	            } else {
+//	            	Log.i(TAG, "SSID is not valid");
+//		            // force cache
+//	            	request.addHeader("Cache-Control", "only-if-cached");
+//	            	int maxStale = 60 * 60 * 24 * 28; // tolerate 4-weeks stale
+//	            	request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + maxStale);
+//	            }
 
 			}
 		};

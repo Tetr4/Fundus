@@ -133,7 +133,7 @@ public class ServiceHelper {
 
 		// create callables
 		for (int i = 0; i < range; i++) {
-			String curURL = "http://" + ipAddress + i + "/" + FundusApplication.SERVICE_URI + "/";
+			String curURL = "http://" + ipAddress + i + "/" + ServiceConnection.SERVICE_URI + "/";
 			CheckConnection checkConnection = new CheckConnection(curURL, getClient());
 			futures.add(complService.submit(checkConnection));
 		}
