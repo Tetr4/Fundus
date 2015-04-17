@@ -1,18 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="de.hundebarf.fundus" >
+    package="de.hundebarf.fundus">
 
-    <!-- barcode scanner uses camera -->
-    <uses-permission android:name="android.permission.CAMERA" />
     <!-- connection to database uses internet -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- barcode scanner uses camera and flashlight-->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
     <!-- check if in hundebarf wifi network -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!-- use flashlight while scanning -->
-    <uses-permission android:name="android.permission.FLASHLIGHT" />
-    <!-- account with username and password for database access -->
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
     <uses-feature
         android:name="android.hardware.wifi"
@@ -39,13 +35,12 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        android:windowSoftInputMode="adjustResize" >
+        android:windowSoftInputMode="adjustResize">
         <activity
             android:name=".ItemSelectActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
- >
-            <intent-filter>
+            android:label="@string/app_name">
+        <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -62,8 +57,7 @@
         <activity
             android:name=".LoginActivity"
             android:label="@string/activity_login_title"
-            android:configChanges="orientation|screenSize" >
-        </activity>
+            android:configChanges="orientation|screenSize" />
     </application>
 
 </manifest>
