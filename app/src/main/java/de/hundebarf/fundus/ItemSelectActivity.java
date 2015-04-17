@@ -56,12 +56,11 @@ public class ItemSelectActivity extends BaseActivity {
 		initScanner();
 	}
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		loadItems();
-	}
-	
+    @Override
+    protected void onServiceAvailable() {
+        loadItems();
+    }
+
 	@Override
 	protected void onPause() {
 		super.onPause();
@@ -95,10 +94,10 @@ public class ItemSelectActivity extends BaseActivity {
 
 			@Override
 			public void failure(RetrofitError error) {
-				handleError(error);
-			}
-		});
-	}
+                onServiceError(error);
+            }
+        });
+    }
 
 	private void initSearchView() {
 		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -258,13 +257,10 @@ public class ItemSelectActivity extends BaseActivity {
 			loadItems();
 			return true;
 
-		case R.id.action_login:
-			Intent intent = new Intent(this, LoginActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-			intent.putExtra(LoginActivity.SWITCH_ACCOUNT, true);
-			startActivity(intent);
-			return true;
+            case R.id.action_switch_user:
+                Intent intent = new Intent(this, LoginActivity.class);
+                startActivity(intent);
+                return true;
 
 		default:
 			return super.onOptionsItemSelected(item);

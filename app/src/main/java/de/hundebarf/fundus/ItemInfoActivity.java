@@ -1,6 +1,7 @@
 package de.hundebarf.fundus;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Dialog;
@@ -29,6 +30,7 @@ public class ItemInfoActivity extends BaseActivity {
 	private static final int NUMBERPICKER_MAX_VALUE = 9999;
 	private Dialog mQuantityDialog;
 	private TextView mStock;
+    private ActionBar mActionBar;
 
 	private int mItemID;
 
@@ -36,7 +38,10 @@ public class ItemInfoActivity extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_info);
-		getActionBar().setDisplayHomeAsUpEnabled(true);
+        mActionBar = getActionBar();
+        if (mActionBar != null) {
+            mActionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
 		// get item which info should be displayed
 		mItemID = getIntent().getExtras().getInt(ITEM_ID, Integer.MIN_VALUE);
@@ -44,13 +49,24 @@ public class ItemInfoActivity extends BaseActivity {
 			throw new IllegalArgumentException("The item's ID has to be given as an extra with key 'ITEM_ID'");
 		}
 
-		loadItem(mItemID);
-
 		initUpdateStockButton();
 	}
 
-	private void initUpdateStockButton() {
-		mStock = (TextView) findViewById(R.id.textview_stock);
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mQuantityDialog != null) {
+            mQuantityDialog.dismiss();
+        }
+    }
+
+    @Override
+    protected void onServiceAvailable() {
+        loadItem(mItemID);
+    }
+
+    private void initUpdateStockButton() {
+        mStock = (TextView) findViewById(R.id.textview_stock);
 
 		ImageButton editButton = (ImageButton) findViewById(R.id.edit_quantity_button);
 		RelativeLayout editQuantityBar = (RelativeLayout) findViewById(R.id.edit_quantity_bar);
@@ -138,11 +154,11 @@ public class ItemInfoActivity extends BaseActivity {
 
 			@Override
 			public void failure(RetrofitError error) {
-				handleError(error);
-				finish();
-			}
-		});
-	}
+                onServiceError(error);
+                finish();
+            }
+        });
+    }
 
 	private void updateQuantity(int itemId, final int quantity) {
 		FundusApplication app = (FundusApplication) getApplication();
@@ -156,22 +172,15 @@ public class ItemInfoActivity extends BaseActivity {
 
 			@Override
 			public void failure(RetrofitError error) {
-				handleError(error);
-				finish();
-			}
-		});
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if (mQuantityDialog != null) {
-			mQuantityDialog.dismiss();
-		}
+                onServiceError(error);
+            }
+        });
 	}
 
 	private void fillFields(Item item) {
-		getActionBar().setTitle(item.name);
+        if (mActionBar != null) {
+            mActionBar.setTitle(item.name);
+        }
 
 		TextView id = (TextView) findViewById(R.id.textview_id);
 		id.setText(Integer.toString(item.id));

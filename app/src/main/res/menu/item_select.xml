@@ -19,11 +19,11 @@
         android:title="@string/action_refresh"/>
     
     <item
-        android:id="@+id/action_login"
+        android:id="@+id/action_switch_user"
         android:icon="@drawable/ic_action_person"
         android:orderInCategory="10"
         android:showAsAction="ifRoom"
-        android:title="@string/action_login"/>
-        
+        android:title="@string/action_switch_user" />
+
 
 </menu>
