@@ -19,15 +19,14 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class LoginActivity extends Activity {
-	public static final String SWITCH_ACCOUNT = "SWITCH_ACCOUNT";
+    protected static final String TAG = LoginActivity.class.getSimpleName();
+    private Button mLoginButton;
+    private Button mGuestButton;
+    private EditText mUserEditText;
+    private EditText mPasswordEditText;
 
-	private Button mLoginButton;
-	private Button mGuestButton;
-	private EditText mUserEditText;
-	private EditText mPasswordEditText;
-	
-	// TODO Resource
-	private final FundusAccount mGuestAccount = new FundusAccount("Fundus", "1234");
+    // TODO Resource
+    private final FundusAccount mGuestAccount = new FundusAccount("Fundus", "1234");
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -121,14 +120,16 @@ public class LoginActivity extends Activity {
 	}
 
 	private void onAuthorized() {
-		startActivity(new Intent(this, ItemSelectActivity.class));
+        Intent intent = new Intent(this, ItemSelectActivity.class);
+        // reuse an existing ItemSelectActivity, when repeatedly pressing the logout and back button
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
 	}
 
-	private void showServiceUnavailable() {
-		// TODO String resource
-		Toast.makeText(this, "Service unavailable", Toast.LENGTH_SHORT).show();
-
-	}
+    private void showServiceUnavailable() {
+        Toast.makeText(this, R.string.service_error, Toast.LENGTH_SHORT).show();
+    }
 
 	private void showNotAuthorized() {
 		mPasswordEditText.setError(getString(R.string.error_not_authorized));

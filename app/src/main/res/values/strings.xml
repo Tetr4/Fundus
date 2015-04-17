@@ -4,7 +4,7 @@
     <string name="app_name">Fundus</string>
     <string name="action_add_item">Add new Item</string>
     <string name="action_refresh">Refresh</string>
-    <string name="action_login">login</string>
+    <string name="action_switch_user">Switch User</string>
 
     <!-- ItemSelectActivity -->
     <string name="scanner_button">Scan Barcode</string>
@@ -54,5 +54,6 @@
     <string name="button_guest">Guest</string>
     <string name="error_not_authorized">Not Authorized</string>
     <string name="error_user_required">User required</string>
+    <string name="service_error">Database not available</string>
 
 </resources>

@@ -3,8 +3,8 @@
 
     <string name="app_name">Fundus</string>
     <string name="action_add_item">Neuen Gegenstand hinzufügen</string>
-    <string name="action_refresh">Refresh</string>
-    <string name="action_login">Login</string>
+    <string name="action_refresh">Neu laden</string>
+    <string name="action_switch_user">Benutzer wechseln</string>
 
     <!-- ItemSelectActivity -->
     <string name="scanner_button">Barcode scannen</string>
@@ -54,5 +54,6 @@
     <string name="button_guest">Gastlogin</string>
     <string name="error_not_authorized">Falscher Name oder Passwort</string>
     <string name="error_user_required">Benutzername benötigt</string>
+    <string name="service_error">Datenbank nicht erreichbar</string>
 
 </resources>
