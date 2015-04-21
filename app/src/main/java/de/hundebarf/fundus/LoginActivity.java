@@ -72,7 +72,6 @@ public class LoginActivity extends Activity {
         mUserEditText.setError(null);
         mPasswordEditText.setError(null);
 
-        FundusApplication app = (FundusApplication) getApplication();
         String user = mUserEditText.getText().toString();
         String password = mPasswordEditText.getText().toString();
 
@@ -82,21 +81,21 @@ public class LoginActivity extends Activity {
             return;
         }
 
-        app.setAccount(new FundusAccount(user, password));
-        attemptLogin();
+        attemptLogin(new FundusAccount(user, password));
     }
 
     private void handleGuestLogin() {
-        FundusApplication app = (FundusApplication) getApplication();
-        app.setAccount(mGuestAccount);
         mUserEditText.setText(mGuestAccount.getUser());
         mPasswordEditText.setText(mGuestAccount.getPassword());
-        attemptLogin();
+        attemptLogin(mGuestAccount);
     }
 
-    private void attemptLogin() {
-        FundusApplication app = (FundusApplication) getApplication();
+    private void attemptLogin(final FundusAccount account) {
+        final FundusApplication app = (FundusApplication) getApplication();
+        final FundusAccount oldAccount = app.getAccount();
+        app.setAccount(account);
         ServiceConnection serviceConnection = app.getServiceConnection();
+
         serviceConnection.checkService(new Callback<Response>() {
 
             @Override
@@ -106,6 +105,7 @@ public class LoginActivity extends Activity {
 
             @Override
             public void failure(RetrofitError error) {
+                app.setAccount(oldAccount);
                 Response response = error.getResponse();
                 if (response != null && response.getStatus() == 401) {
                     showNotAuthorized();
