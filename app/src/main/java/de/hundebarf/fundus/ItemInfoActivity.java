@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 
 import de.hundebarf.fundus.collection.Item;
 import de.hundebarf.fundus.database.ServiceConnection;
+import de.hundebarf.fundus.view.TitledTextView;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -190,38 +191,29 @@ public class ItemInfoActivity extends BaseActivity {
             mActionBar.setTitle(item.name);
         }
 
-		TextView id = (TextView) findViewById(R.id.textview_id);
-		id.setText(Integer.toString(item.id));
-
-		TextView shortName = (TextView) findViewById(R.id.textview_shortname);
-		shortName.setText(item.shortName);
-
-		TextView supplier = (TextView) findViewById(R.id.textview_supplier);
-		supplier.setText(item.supplier);
-
-		TextView quantity = (TextView) findViewById(R.id.textview_quantity);
-		quantity.setText(item.quantityContent + " " + item.unitContent);
-
-		TextView category = (TextView) findViewById(R.id.textview_category);
-		category.setText(item.category);
-
-		TextView price = (TextView) findViewById(R.id.textview_price);
-		price.setText(String.format("%.2f €", item.price / 100.0));
-
-		TextView description = (TextView) findViewById(R.id.textview_description);
-		TextView descriptionTitle = (TextView) findViewById(R.id.textview_description_title);
-		if (item.description == null || item.description.isEmpty()){
-			description.setVisibility(View.GONE);
-			descriptionTitle.setVisibility(View.GONE);
-		} else {
-			description.setVisibility(View.VISIBLE);
-			descriptionTitle.setVisibility(View.VISIBLE);
-			description.setText(item.description);
-		}
-
-		TextView stock = (TextView) findViewById(R.id.textview_stock);
-		stock.setText(Integer.toString(item.stock));
+        fillField(R.id.titled_textview_id, Integer.toString(item.id));
+        fillField(R.id.titled_textview_shortname, item.shortName);
+        fillField(R.id.titled_textview_supplier, item.supplier);
+        fillField(R.id.titled_textview_quantity, item.quantityContent + " " + item.unitContent);
+        fillField(R.id.titled_textview_category, item.category);
+        fillField(R.id.titled_textview_price, String.format("%.2f €", item.price / 100.0));
+        fillField(R.id.titled_textview_category, item.category);
+        fillField(R.id.titled_textview_description, item.description);
+        TextView stock = (TextView) findViewById(R.id.textview_stock);
+        stock.setText(Integer.toString(item.stock));
 	}
+
+    private void fillField(int id, String value) {
+        TitledTextView titledTextView = (TitledTextView) findViewById(id);
+        if(value == null || value.isEmpty()) {
+            // hide
+            titledTextView.setVisibility(View.GONE);
+        } else {
+            titledTextView.setText(value);
+            titledTextView.setVisibility(View.VISIBLE);
+        }
+    }
+
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

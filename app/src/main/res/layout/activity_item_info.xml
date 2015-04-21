@@ -1,15 +1,16 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="de.hundebarf.fundus.ItemInfoActivity"
-    tools:ignore="MergeRootFrame" >
+    tools:ignore="MergeRootFrame">
 
     <!-- Item Infos -->
     <ScrollView
         android:id="@+id/scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:id="@+id/container"
@@ -20,113 +21,63 @@
             android:layout_marginRight="@dimen/activity_item_info_horizontal_margin"
             android:layout_marginTop="@dimen/activity_item_info_vertical_margin"
             android:gravity="left"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <!-- ID -->
-            <TextView
-                style="?android:attr/listSeparatorTextViewStyle"
+            <de.hundebarf.fundus.view.TitledTextView
+                android:id="@+id/titled_textview_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_title_margin_bottom"
-                android:text="@string/item_id" />
-            <TextView
-                android:id="@+id/textview_id"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_margin_bottom"
-                android:layout_marginLeft="@dimen/item_info_margin_left"
-                tools:text="123" />
+                custom:title="@string/item_id" />
 
             <!-- Shortname -->
-            <TextView
-                style="?android:attr/listSeparatorTextViewStyle"
+            <de.hundebarf.fundus.view.TitledTextView
+                android:id="@+id/titled_textview_shortname"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_title_margin_bottom"
-                android:text="@string/item_shortname" />
-            <TextView
-                android:id="@+id/textview_shortname"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_margin_bottom"
-                android:layout_marginLeft="@dimen/item_info_margin_left"
-                tools:text="Blättermagen" />
+                android:visible="false"
+                custom:title="@string/item_shortname" />
 
             <!-- Supplier -->
-            <TextView
-                style="?android:attr/listSeparatorTextViewStyle"
+            <de.hundebarf.fundus.view.TitledTextView
+                android:id="@+id/titled_textview_supplier"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_title_margin_bottom"
-                android:text="@string/item_supplier" />
-            <TextView
-                android:id="@+id/textview_supplier"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_margin_bottom"
-                android:layout_marginLeft="@dimen/item_info_margin_left"
-                tools:text="Lunderland" />
+                android:visible="false"
+                custom:title="@string/item_supplier" />
 
             <!-- Quantity(Content); Unit(Content) -->
-            <TextView
-                style="?android:attr/listSeparatorTextViewStyle"
+            <de.hundebarf.fundus.view.TitledTextView
+                android:id="@+id/titled_textview_quantity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_title_margin_bottom"
-                android:text="@string/item_quantitycontent" />
-            <TextView
-                android:id="@+id/textview_quantity"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_margin_bottom"
-                android:layout_marginLeft="@dimen/item_info_margin_left"
-                tools:text="10 Stk." />
+                android:visible="false"
+                custom:title="@string/item_quantitycontent" />
+
 
             <!-- Category -->
-            <TextView
-                style="?android:attr/listSeparatorTextViewStyle"
+            <de.hundebarf.fundus.view.TitledTextView
+                android:id="@+id/titled_textview_category"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_title_margin_bottom"
-                android:text="@string/item_category" />
-            <TextView
-                android:id="@+id/textview_category"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_margin_bottom"
-                android:layout_marginLeft="@dimen/item_info_margin_left"
-                tools:text="Frostfleisch" />
+                android:visible="false"
+                custom:title="@string/item_category" />
 
             <!-- Selling Price -->
-            <TextView
-                style="?android:attr/listSeparatorTextViewStyle"
+            <de.hundebarf.fundus.view.TitledTextView
+                android:id="@+id/titled_textview_price"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_title_margin_bottom"
-                android:text="@string/item_sellingprice" />
-            <TextView
-                android:id="@+id/textview_price"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_margin_bottom"
-                android:layout_marginLeft="@dimen/item_info_margin_left"
-                tools:text="2,30€" />
+                android:visible="false"
+                custom:title="@string/item_sellingprice" />
 
             <!-- Description -->
-            <TextView
-                android:id="@+id/textview_description_title"
-                style="?android:attr/listSeparatorTextViewStyle"
+            <de.hundebarf.fundus.view.TitledTextView
+                android:id="@+id/titled_textview_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_title_margin_bottom"
-                android:text="@string/item_description" />
-            <TextView
-                android:id="@+id/textview_description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/item_info_margin_bottom"
-                android:layout_marginLeft="@dimen/item_info_margin_left"
-                tools:text="Toll" />
+                android:visible="false"
+                custom:title="@string/item_description" />
 
             <!-- Footer Spacing-->
             <Space
@@ -141,7 +92,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_bar_height"
         android:layout_gravity="bottom"
-        android:background="@drawable/bottom_bar" >
+        android:background="@drawable/bottom_bar">
 
         <TextView
             android:id="@+id/textview_stock_title"
@@ -157,7 +108,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <!-- 1/3 - Horizontal Spacer -->
             <Space
@@ -180,7 +131,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="center" >
+                android:gravity="center">
 
                 <ImageButton
                     android:id="@+id/edit_quantity_button"
