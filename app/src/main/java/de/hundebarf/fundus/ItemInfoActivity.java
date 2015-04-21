@@ -9,7 +9,6 @@ import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
@@ -61,7 +60,13 @@ public class ItemInfoActivity extends BaseActivity {
     }
 
     @Override
-    protected void onServiceAvailable() {
+    protected void onResume() {
+        super.onResume();
+        refresh();
+    }
+
+    @Override
+    protected void onRefresh() {
         loadItem(mItemID);
     }
 
@@ -149,18 +154,20 @@ public class ItemInfoActivity extends BaseActivity {
 			@Override
 			public void success(Item item, Response response) {
 				fillFields(item);
+                handleServiceSuccess();
 				// TODO show item age
 			}
 
 			@Override
 			public void failure(RetrofitError error) {
-                onServiceError(error);
+                handleServiceError(error);
                 finish();
             }
         });
     }
 
 	private void updateQuantity(int itemId, final int quantity) {
+        // TODO refresh animation
 		FundusApplication app = (FundusApplication) getApplication();
 		ServiceConnection serviceConnection = app.getServiceConnection();
 		serviceConnection.updateQuantity(itemId, quantity, new Callback<Response>() {
@@ -168,11 +175,12 @@ public class ItemInfoActivity extends BaseActivity {
 			@Override
 			public void success(Response response1, Response response2) {
 				mStock.setText(Integer.toString(quantity));
+                handleServiceSuccess();
 			}
 
 			@Override
 			public void failure(RetrofitError error) {
-                onServiceError(error);
+                handleServiceError(error);
             }
         });
 	}
@@ -218,17 +226,8 @@ public class ItemInfoActivity extends BaseActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.item_info, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.action_refresh) {
-			loadItem(mItemID);
-			return true;
-		} else {
-			return super.onOptionsItemSelected(item);
-		}
+		return super.onCreateOptionsMenu(menu);
 	}
 
 }
+

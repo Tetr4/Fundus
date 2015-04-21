@@ -55,18 +55,25 @@ public class ItemSelectActivity extends BaseActivity {
 		initScanner();
 	}
 
+
     @Override
-    protected void onServiceAvailable() {
-        loadItems();
+    protected void onResume() {
+        super.onResume();
+        refresh();
     }
 
-	@Override
+    @Override
 	protected void onPause() {
 		super.onPause();
 		mScannerFragment.collapseNoAnim();
 	}
 
-	private void initExpandableListView() {
+    @Override
+    protected void onRefresh() {
+        loadItems();
+    }
+
+    private void initExpandableListView() {
 		mExpandableListView = (ExpandableListView) findViewById(R.id.expandable_list_view);
 		mListAdapter = new ExpandableItemListAdapter(this, mCategories);
 		mExpandableListView.setAdapter(mListAdapter);
@@ -88,12 +95,13 @@ public class ItemSelectActivity extends BaseActivity {
 			@Override
 			public void success(List<Item> items, Response response) {
 				fillList(items);
+                handleServiceSuccess();
 				// TODO show age of items
 			}
 
 			@Override
 			public void failure(RetrofitError error) {
-                onServiceError(error);
+                handleServiceError(error);
             }
         });
     }
@@ -255,8 +263,8 @@ public class ItemSelectActivity extends BaseActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.item_select, menu);
-		return true;
-	}
+        return super.onCreateOptionsMenu(menu);
+    }
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -266,16 +274,13 @@ public class ItemSelectActivity extends BaseActivity {
 		// startActivity(new Intent(this, ItemAddActivity.class));
 		// break;
 		
-		case R.id.action_refresh:
-			loadItems();
-			return true;
-
-            case R.id.action_switch_user:
-                Intent intent = new Intent(this, LoginActivity.class);
-                startActivity(intent);
-                return true;
+        case R.id.action_switch_user:
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            return true;
 
 		default:
+            // refresh handling is implemented in BaseActivity
 			return super.onOptionsItemSelected(item);
 		}
 	}

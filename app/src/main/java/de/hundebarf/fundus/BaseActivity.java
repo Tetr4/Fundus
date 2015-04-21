@@ -3,13 +3,12 @@ package de.hundebarf.fundus;
 import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
-import de.hundebarf.fundus.database.ServiceConnection;
-import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.RetrofitError.Kind;
-import retrofit.client.Response;
 
 /**
  * Abstract Activity which checks service availability and validates user authorization.
@@ -19,32 +18,33 @@ public abstract class BaseActivity extends Activity {
 
     protected static final String TAG = BaseActivity.class.getSimpleName();
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        FundusApplication app = (FundusApplication) getApplication();
-        ServiceConnection connection = app.getServiceConnection();
-        connection.checkService(new Callback<Response>() {
+    private MenuItem mRefreshMenuItem;
+    private boolean mRefreshing;
 
-            @Override
-            public void success(Response response, Response r2) {
-                onServiceAvailable();
+    /**
+     * Called when the service is unavailable
+     *
+     * @param error the error causing the unavailability
+     */
+    protected final void handleServiceError(RetrofitError error) {
+        doneRefreshing();
+        if (error.getKind() == Kind.HTTP) {
+            switch (error.getResponse().getStatus()) {
+                // react to different http error codes
+                case 401:
+                    onNotAuthorized();
+                    return;
             }
-
-            @Override
-            public void failure(RetrofitError error) {
-                if (error.getKind() == Kind.HTTP) {
-                    switch (error.getResponse().getStatus()) {
-                        // react to different http error codes
-                        case 401:
-                            onNotAuthorized();
-                            return;
-                    }
-                }
-                onServiceError(error);
-            }
-        });
+        }
+        // TODO more Info
+        Log.w(TAG, "Service error", error);
+        Toast.makeText(BaseActivity.this, getString(R.string.service_error), Toast.LENGTH_LONG).show();
     }
+
+    protected final void handleServiceSuccess() {
+        doneRefreshing();
+    }
+
 
     /**
      * Start the {@link LoginActivity}
@@ -57,19 +57,40 @@ public abstract class BaseActivity extends Activity {
         startActivity(loginIntent);
     }
 
-    /**
-     * Called when the service is unavailable
-     *
-     * @param error the error causing the unavailability
-     */
-    protected void onServiceError(RetrofitError error) {
-        // TODO more Info
-        Log.w(TAG, "Service error", error);
-        Toast.makeText(BaseActivity.this, getString(R.string.service_error), Toast.LENGTH_LONG).show();
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        mRefreshMenuItem = menu.findItem(R.id.action_refresh);
+        if(mRefreshing && mRefreshMenuItem != null) {
+            mRefreshMenuItem.setActionView(R.layout.action_progressbar);
+        }
+        return true;
     }
 
-    /**
-     * Called when the service is available and the user is authorized
-     */
-    protected abstract void onServiceAvailable();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_refresh) {
+            refresh();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    protected final void refresh() {
+        mRefreshing = true;
+        if(mRefreshMenuItem != null) {
+            mRefreshMenuItem.setActionView(R.layout.action_progressbar);
+        }
+        onRefresh();
+    }
+
+    private void doneRefreshing() {
+        mRefreshing = false;
+        if(mRefreshMenuItem != null) {
+            mRefreshMenuItem.collapseActionView();
+            mRefreshMenuItem.setActionView(null);
+        }
+    }
+
+    protected abstract void onRefresh();
 }
