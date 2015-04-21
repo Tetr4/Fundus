@@ -7,14 +7,14 @@
     android:gravity="center_horizontal"
     android:orientation="vertical"
     tools:context="de.hundebarf.fundus.ItemSelectActivity"
-    tools:ignore="MergeRootFrame" >
+    tools:ignore="MergeRootFrame">
 
     <!-- Scanner -->
     <fragment
         android:id="@+id/scanner_fragment"
         android:name="de.hundebarf.fundus.scanner.ScannerFragment"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/scanner_height_collapsed"/>
+        android:layout_height="@dimen/scanner_height_collapsed" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,14 +22,14 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="@dimen/scanner_border_minus"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
-            <!-- Searchview -->
+        <!-- Searchview -->
             <SearchView
                 android:id="@+id/search_view"
                 android:layout_width="0dp"
@@ -51,12 +51,13 @@
                 android:scaleType="centerCrop" />
         </LinearLayout>
 
-        
+
         <!-- Itemlist -->
         <ExpandableListView
             android:id="@+id/expandable_list_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:scrollbarStyle="outsideInset" />
     </LinearLayout>
 
 </LinearLayout>
