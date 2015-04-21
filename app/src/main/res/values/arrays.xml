@@ -8,7 +8,7 @@
         <item>cm</item>
     </string-array>
     
-    <string-array name="selectable_sizes">
+    <string-array name="selectable_sizes" translatable="false">
         <item>xs</item>
         <item>s</item>
         <item>m</item>
@@ -17,7 +17,7 @@
         <item>xxl</item>
     </string-array>
     
-    <string-array name="disabled_categories">
+    <string-array name="disabled_categories" translatable="false">
         <item>Gutscheine</item>
         <item>Ostern</item>
         <item>Valentinstag</item>
@@ -27,7 +27,7 @@
         <item>Lillycard</item>
     </string-array>
 
-    <string-array name="disabled_items">
+    <string-array name="disabled_items" translatable="false">
         <item>Ostern</item>
         <item>Valentinstag</item>
         <item>Weihnachten</item>
@@ -36,7 +36,7 @@
         <item> </item>
     </string-array>
      
-    <string-array name="selectable_categories">
+    <string-array name="selectable_categories" translatable="false">
         <item>Accessoires</item>
         <item>Bücher</item>
         <item>Coaching</item>
@@ -61,7 +61,7 @@
         <item>Lillycard</item>
     </string-array>
     
-    <string-array name="valid_ssids">
+    <string-array name="valid_ssids" translatable="false">
         <item >HundeBARF</item>
         <item >BatCave</item>
     </string-array>
