@@ -56,5 +56,7 @@
     <string name="error_user_required">User required</string>
     <string name="service_error">Database not available</string>
     <string name="without_category">Without Category</string>
+    <string name="guest_user" translatable="false">Fundus</string>
+    <string name="guest_password" translatable="false">1234</string>
 
 </resources>
