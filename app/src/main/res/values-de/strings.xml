@@ -55,5 +55,6 @@
     <string name="error_not_authorized">Falscher Name oder Passwort</string>
     <string name="error_user_required">Benutzername benötigt</string>
     <string name="service_error">Datenbank nicht erreichbar</string>
+    <string name="without_category">Ohne Kategorie</string>
 
 </resources>

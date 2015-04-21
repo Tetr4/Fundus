@@ -33,7 +33,6 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class ItemSelectActivity extends BaseActivity {
-	public static final String TAG = ItemSelectActivity.class.getSimpleName();
 
 	// Barcode Scanner
 	private ScannerFragment mScannerFragment;
@@ -171,16 +170,30 @@ public class ItemSelectActivity extends BaseActivity {
 	private void fillList(List<Item> items) {
 		// disabled Categories as HashSet for fast checking
 		String[] disabledCategoriesArray = getResources().getStringArray(R.array.disabled_categories);
+        String[] disabledItemsArray = getResources().getStringArray(R.array.disabled_items);
+        Set<String> disabledItems = new HashSet<>();
 		Set<String> disabledCategories = new HashSet<>();
 		Collections.addAll(disabledCategories, disabledCategoriesArray);
+        Collections.addAll(disabledItems, disabledItemsArray);
 
 		// associate items with categories and barcodes with ids
 		Map<String, List<Item>> categoryToItems = new HashMap<>();
 		for (Item curItem : items) {
+
+            // items without category
+            if(curItem.category == null) {
+                curItem.category = getString(R.string.without_category);
+            }
+
 			// disable some categories
 			if (disabledCategories.contains(curItem.category)) {
 				continue;
 			}
+
+            // disable some items
+            if(disabledItems.contains(curItem.name)) {
+                continue;
+            }
 
 			// remove special category items
 			if (curItem.name.equals(curItem.category)) {

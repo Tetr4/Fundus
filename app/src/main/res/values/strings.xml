@@ -55,5 +55,6 @@
     <string name="error_not_authorized">Not Authorized</string>
     <string name="error_user_required">User required</string>
     <string name="service_error">Database not available</string>
+    <string name="without_category">Without Category</string>
 
 </resources>

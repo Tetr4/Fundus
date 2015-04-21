@@ -26,6 +26,15 @@
         <item>Rabatt</item>
         <item>Lillycard</item>
     </string-array>
+
+    <string-array name="disabled_items">
+        <item>Ostern</item>
+        <item>Valentinstag</item>
+        <item>Weihnachten</item>
+        <item>Halloween</item>
+        <item>Rabatt</item>
+        <item> </item>
+    </string-array>
      
     <string-array name="selectable_categories">
         <item>Accessoires</item>
