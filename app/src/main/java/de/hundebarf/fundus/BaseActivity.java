@@ -22,7 +22,7 @@ public abstract class BaseActivity extends Activity {
     private boolean mRefreshing;
 
     /**
-     * Called when the service is unavailable
+     * Call this when the service returned an error
      *
      * @param error the error causing the unavailability
      */
@@ -41,6 +41,9 @@ public abstract class BaseActivity extends Activity {
         Toast.makeText(BaseActivity.this, getString(R.string.service_error), Toast.LENGTH_LONG).show();
     }
 
+    /**
+     * Call this when the service request was successful
+     */
     protected final void handleServiceSuccess() {
         doneRefreshing();
     }
@@ -76,6 +79,11 @@ public abstract class BaseActivity extends Activity {
         }
     }
 
+
+    /**
+     * Shows the refresh menuitem as busy
+     * and calls onRefresh()
+     */
     protected final void refresh() {
         mRefreshing = true;
         if(mRefreshMenuItem != null) {
