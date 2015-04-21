@@ -33,8 +33,7 @@ public class FundusApplication extends Application {
 	private ServiceConnection mServiceConnection;
 	private Endpoint mEndpoint;
 	private ServiceHelper mServiceHelper;
-	//private String mServiceURL = "http://192.168.178.9";
-    private String mServiceURL = "http://192.168.42.25";
+    private String mServiceURL = "http://192.168.42.202";
 
 	private FundusAccount mAccount;
 
@@ -102,8 +101,8 @@ public class FundusApplication extends Application {
 			Log.w(TAG, "Could not create httpClientCache", e);
 		}
 
-		okHttpClient.setReadTimeout(60, TimeUnit.SECONDS);
-		okHttpClient.setConnectTimeout(60, TimeUnit.SECONDS);
+        okHttpClient.setReadTimeout(7, TimeUnit.SECONDS);
+        okHttpClient.setConnectTimeout(7, TimeUnit.SECONDS);
 
 		// Default Header (Authorization, User-Agent, etc.)
 		RequestInterceptor interceptor = new RequestInterceptor() {
@@ -117,26 +116,24 @@ public class FundusApplication extends Application {
 				String credentials = Credentials.basic(account.getUser(), account.getPassword());
 				request.addHeader("Authorization", credentials);
 
-//				// caching
-//	            if(mServiceHelper.isSSIDValid()) {
-//            		// success
-//            		// skip cache, force full refresh
-//	            	request.addHeader("Cache-Control", "no-cache");
-//	                int maxAge = 60; // read from cache for 1 minute
-//	                request.addHeader("Cache-Control", "public, max-age=" + maxAge);
-//	            } else {
-//	            	Log.i(TAG, "SSID is not valid");
-//		            // force cache
-//	            	request.addHeader("Cache-Control", "only-if-cached");
-//	            	int maxStale = 60 * 60 * 24 * 28; // tolerate 4-weeks stale
-//	            	request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + maxStale);
-//	            }
+                // caching
+                if (mServiceHelper.isSSIDValid()) {
+                    // success
+                    // skip cache, force full refresh
+                    request.addHeader("Cache-Control", "no-cache");
+                    // TODO use service discovery if SSID valid and service url invalid
+                } else {
+                    Log.i(TAG, "SSID is not valid");
+                    // force cache
+                    request.addHeader("Cache-Control", "only-if-cached");
+                    // TODO fill complete cache at some point
+                }
 
 			}
 		};
-		
-		// Endpoint
-		mEndpoint = new Endpoint() {
+
+        // Endpoint
+        mEndpoint = new Endpoint() {
 			@Override
 			public String getUrl() {
 				return mServiceURL;
