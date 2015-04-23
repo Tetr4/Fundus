@@ -31,15 +31,16 @@ public class FundusApplication extends Application {
 	private static final String SERVICE_URL_PREFERENCE = "SERVICE_URL_PREFERENCE";
 
 	private ServiceConnection mServiceConnection;
-	private Endpoint mEndpoint;
-	private ServiceHelper mServiceHelper;
+    private ServiceConnection mCacheConnection;
+    private ServiceHelper mServiceHelper;
+    private static final long TIMEOUT = 7; // seconds
+
     private String mServiceURL = "http://192.168.42.202";
+    private FundusAccount mAccount;
 
-	private FundusAccount mAccount;
-
-	@Override
-	public void onCreate() {
-		mPreferences = getSharedPreferences(FUNDUS_PREFERENCES, MODE_PRIVATE);
+    @Override
+    public void onCreate() {
+        mPreferences = getSharedPreferences(FUNDUS_PREFERENCES, MODE_PRIVATE);
 		
 		// Service URL
 		mServiceURL = mPreferences.getString(FundusApplication.SERVICE_URL_PREFERENCE, mServiceURL);
@@ -81,61 +82,58 @@ public class FundusApplication extends Application {
 		mServiceURL = serviceURL;
 		mPreferences.edit().putString(SERVICE_URL_PREFERENCE, serviceURL).apply();
 	}
-	
-	public ServiceConnection getServiceConnection() {
-		if (mServiceConnection == null) {
-			// lazy init
-			mServiceConnection = createServiceConnection();
-		}
-		return mServiceConnection;
-	}
 
-	private ServiceConnection createServiceConnection() {
-		// Caching
-		// TODO actually cache data and reuse
-		OkHttpClient okHttpClient = new OkHttpClient();
-		try {
+    public ServiceConnection getServiceConnection() {
+        if (mServiceConnection == null) {
+            // lazy init
+            createCacheAndNetworkConnections();
+        }
+        return mServiceConnection;
+    }
+
+    public ServiceConnection getCacheConnection() {
+        if (mCacheConnection == null) {
+            // lazy init
+            createCacheAndNetworkConnections();
+        }
+        return mCacheConnection;
+    }
+
+    private void createCacheAndNetworkConnections() {
+        // Client for caching and timeouts
+        OkHttpClient okHttpClient = new OkHttpClient();
+        try {
 			Cache cache = new Cache(getCacheDir(), 10 * 1024 * 1024);
 			okHttpClient.setCache(cache);
 		} catch (IOException e) {
 			Log.w(TAG, "Could not create httpClientCache", e);
 		}
+        okHttpClient.setReadTimeout(TIMEOUT, TimeUnit.SECONDS);
+        okHttpClient.setConnectTimeout(TIMEOUT, TimeUnit.SECONDS);
 
-        okHttpClient.setReadTimeout(7, TimeUnit.SECONDS);
-        okHttpClient.setConnectTimeout(7, TimeUnit.SECONDS);
+        // forces cache
+        // TODO fill complete cache at some point
+        RequestInterceptor cacheInterceptor = new FundusInterceptor() {
+            @Override
+            public void intercept(RequestFacade request) {
+                super.intercept(request);
+                request.addHeader("Cache-Control", "only-if-cached, max-stale=" + Integer.MAX_VALUE);
+            }
+        };
 
-		// Default Header (Authorization, User-Agent, etc.)
-		RequestInterceptor interceptor = new RequestInterceptor() {
-			@Override
-			public void intercept(RequestFacade request) {
-				request.addHeader("User-Agent", "Fundus-App");
-				request.addHeader("Accept", "application/json");
-				
-				// basic access authentication
-				FundusAccount account = getAccount();
-				String credentials = Credentials.basic(account.getUser(), account.getPassword());
-				request.addHeader("Authorization", credentials);
+        // skips cache and forces full refresh
+        RequestInterceptor noCacheInterceptor = new FundusInterceptor() {
+            @Override
+            public void intercept(RequestFacade request) {
+                super.intercept(request);
+                request.addHeader("Cache-Control", "no-cache");
+            }
+        };
 
-                // caching
-                if (mServiceHelper.isSSIDValid()) {
-                    // success
-                    // skip cache, force full refresh
-                    request.addHeader("Cache-Control", "no-cache");
-                    // TODO use service discovery if SSID valid and service url invalid
-                } else {
-                    Log.i(TAG, "SSID is not valid");
-                    // force cache
-                    request.addHeader("Cache-Control", "only-if-cached");
-                    // TODO fill complete cache at some point
-                }
-
-			}
-		};
-
-        // Endpoint
-        mEndpoint = new Endpoint() {
-			@Override
-			public String getUrl() {
+        // Dynamic endpoint
+        Endpoint endpoint = new Endpoint() {
+            @Override
+            public String getUrl() {
 				return mServiceURL;
 			}
 			@Override
@@ -145,14 +143,32 @@ public class FundusApplication extends Application {
 		};
 
 		// Build RestAdapter
-		RestAdapter restAdapter = new RestAdapter.Builder()
-				.setEndpoint(mEndpoint)
+        RestAdapter.Builder builder = new RestAdapter.Builder()
+                .setEndpoint(endpoint)
 //				.setLogLevel(RestAdapter.LogLevel.FULL)
 				.setClient(new OkClient(okHttpClient))
-				.setRequestInterceptor(interceptor)
-				.build();
-		
-		return restAdapter.create(ServiceConnection.class);
-	}
+                .setRequestInterceptor(noCacheInterceptor);
+        mServiceConnection = builder.build().create(ServiceConnection.class);
+
+        builder.setRequestInterceptor(cacheInterceptor);
+        mCacheConnection = builder.build().create(ServiceConnection.class);
+    }
+
+    /**
+     * Adds Authorization header (and User-Agent, etc.) to every request.
+     */
+    private class FundusInterceptor implements RequestInterceptor {
+
+        @Override
+        public void intercept(RequestFacade request) {
+            request.addHeader("User-Agent", "Fundus-App");
+            request.addHeader("Accept", "application/json");
+
+            // basic access authentication
+            FundusAccount account = getAccount();
+            String credentials = Credentials.basic(account.getUser(), account.getPassword());
+            request.addHeader("Authorization", credentials);
+        }
+    }
 
 }

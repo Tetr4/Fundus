@@ -62,6 +62,7 @@ public class ItemSelectActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        loadItemsFromCache();
         refresh();
     }
 
@@ -73,24 +74,26 @@ public class ItemSelectActivity extends BaseActivity {
 
     @Override
     protected void onRefresh() {
-        loadItems();
+        loadItemsFromService();
     }
 
-    private void initExpandableListView() {
-        mExpandableListView = (ExpandableListView) findViewById(R.id.expandable_list_view);
-        mListAdapter = new ExpandableItemListAdapter(this, mCategories);
-        mExpandableListView.setAdapter(mListAdapter);
-        mExpandableListView.setOnChildClickListener(new OnChildClickListener() {
+    private void loadItemsFromCache() {
+        FundusApplication app = (FundusApplication) getApplication();
+        ServiceConnection serviceConnection = app.getCacheConnection();
+        serviceConnection.queryItemList(new Callback<List<Item>>() {
+
             @Override
-            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                Item item = (Item) mListAdapter.getChild(groupPosition, childPosition);
-                startItemInfoActivity(item.id);
-                return true;
+            public void success(List<Item> items, Response response) {
+                fillList(items);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
             }
         });
     }
 
-    private void loadItems() {
+    private void loadItemsFromService() {
         FundusApplication app = (FundusApplication) getApplication();
         ServiceConnection serviceConnection = app.getServiceConnection();
         serviceConnection.queryItemList(new Callback<List<Item>>() {
@@ -105,6 +108,20 @@ public class ItemSelectActivity extends BaseActivity {
             @Override
             public void failure(RetrofitError error) {
                 handleServiceError(error);
+            }
+        });
+    }
+
+    private void initExpandableListView() {
+        mExpandableListView = (ExpandableListView) findViewById(R.id.expandable_list_view);
+        mListAdapter = new ExpandableItemListAdapter(this, mCategories);
+        mExpandableListView.setAdapter(mListAdapter);
+        mExpandableListView.setOnChildClickListener(new OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                Item item = (Item) mListAdapter.getChild(groupPosition, childPosition);
+                startItemInfoActivity(item.id);
+                return true;
             }
         });
     }

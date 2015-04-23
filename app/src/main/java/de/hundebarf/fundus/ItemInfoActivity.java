@@ -33,10 +33,11 @@ public class ItemInfoActivity extends BaseActivity {
     private ActionBar mActionBar;
 
 	private int mItemID;
+    private boolean mItemDataAvailable = false;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_info);
         mActionBar = getActionBar();
         if (mActionBar != null) {
@@ -53,6 +54,14 @@ public class ItemInfoActivity extends BaseActivity {
 	}
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // load item from cache, then from service
+        loadItemFromCache(mItemID);
+        refresh();
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         if (mQuantityDialog != null) {
@@ -61,14 +70,46 @@ public class ItemInfoActivity extends BaseActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        refresh();
+    protected void onRefresh() {
+        loadItemFromService(mItemID);
     }
 
-    @Override
-    protected void onRefresh() {
-        loadItem(mItemID);
+    private void loadItemFromCache(int itemId) {
+        FundusApplication app = (FundusApplication) getApplication();
+        ServiceConnection cacheConnection = app.getCacheConnection();
+        cacheConnection.queryItem(itemId, new Callback<Item>() {
+
+            @Override
+            public void success(Item item, Response response) {
+                fillFields(item);
+                // TODO show item age
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+            }
+        });
+    }
+
+    private void loadItemFromService(int itemId) {
+        FundusApplication app = (FundusApplication) getApplication();
+        ServiceConnection serviceConnection = app.getServiceConnection();
+        serviceConnection.queryItem(itemId, new Callback<Item>() {
+
+            @Override
+            public void success(Item item, Response response) {
+                fillFields(item);
+                handleServiceSuccess();
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                handleServiceError(error);
+                if (!mItemDataAvailable) {
+                    finish();
+                }
+            }
+        });
     }
 
     private void initUpdateStockButton() {
@@ -147,26 +188,6 @@ public class ItemInfoActivity extends BaseActivity {
         }
     }
 
-	private void loadItem(final int itemId) {
-		FundusApplication app = (FundusApplication) getApplication();
-		ServiceConnection serviceConnection = app.getServiceConnection();
-		serviceConnection.queryItem(itemId, new Callback<Item>() {
-
-			@Override
-			public void success(Item item, Response response) {
-				fillFields(item);
-                handleServiceSuccess();
-				// TODO show item age
-			}
-
-			@Override
-			public void failure(RetrofitError error) {
-                handleServiceError(error);
-                finish();
-            }
-        });
-    }
-
 	private void updateQuantity(int itemId, final int quantity) {
         // TODO refresh animation
 		FundusApplication app = (FundusApplication) getApplication();
@@ -187,6 +208,7 @@ public class ItemInfoActivity extends BaseActivity {
 	}
 
 	private void fillFields(Item item) {
+        mItemDataAvailable = true;
         if (mActionBar != null) {
             mActionBar.setTitle(item.name);
         }
