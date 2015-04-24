@@ -8,6 +8,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -56,9 +57,11 @@ public class ItemInfoActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // load item from cache, then from service
-        loadItemFromCache(mItemID);
-        refresh();
+        if (!mItemDataAvailable) {
+            // load item from cache, then from service
+            loadItemFromCache(mItemID);
+            refresh();
+        }
     }
 
     @Override
@@ -87,6 +90,7 @@ public class ItemInfoActivity extends BaseActivity {
 
             @Override
             public void failure(RetrofitError error) {
+                Log.v(TAG, "item not in cache");
             }
         });
     }

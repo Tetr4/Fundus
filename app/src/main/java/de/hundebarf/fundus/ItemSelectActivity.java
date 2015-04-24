@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -46,6 +47,7 @@ public class ItemSelectActivity extends BaseActivity {
     private ExpandableItemListAdapter mListAdapter;
     private List<Category> mCategories = new ArrayList<>();
     private Map<String, Integer> mBarcodeToItemID = new HashMap<>();
+    private boolean mItemDataAvailable = false;
 
 
     @Override
@@ -62,8 +64,10 @@ public class ItemSelectActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadItemsFromCache();
-        refresh();
+        if (!mItemDataAvailable) {
+            loadItemsFromCache();
+            refresh();
+        }
     }
 
     @Override
@@ -89,6 +93,7 @@ public class ItemSelectActivity extends BaseActivity {
 
             @Override
             public void failure(RetrofitError error) {
+                Log.v(TAG, "itemlist not in cache");
             }
         });
     }
@@ -196,6 +201,7 @@ public class ItemSelectActivity extends BaseActivity {
     }
 
     private void fillList(List<Item> items) {
+        mItemDataAvailable = true;
         // disabled Categories as HashSet for fast checking
         String[] disabledCategoriesArray = getResources().getStringArray(R.array.disabled_categories);
         String[] disabledItemsArray = getResources().getStringArray(R.array.disabled_items);
