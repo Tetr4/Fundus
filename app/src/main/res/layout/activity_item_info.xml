@@ -28,6 +28,7 @@
                 android:id="@+id/titled_textview_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 custom:title="@string/item_id" />
 
             <!-- Shortname -->
@@ -35,7 +36,7 @@
                 android:id="@+id/titled_textview_shortname"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visible="false"
+                android:visibility="gone"
                 custom:title="@string/item_shortname" />
 
             <!-- Supplier -->
@@ -43,7 +44,7 @@
                 android:id="@+id/titled_textview_supplier"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visible="false"
+                android:visibility="gone"
                 custom:title="@string/item_supplier" />
 
             <!-- Quantity(Content); Unit(Content) -->
@@ -51,7 +52,7 @@
                 android:id="@+id/titled_textview_quantity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visible="false"
+                android:visibility="gone"
                 custom:title="@string/item_quantitycontent" />
 
 
@@ -60,7 +61,7 @@
                 android:id="@+id/titled_textview_category"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visible="false"
+                android:visibility="gone"
                 custom:title="@string/item_category" />
 
             <!-- Selling Price -->
@@ -68,7 +69,7 @@
                 android:id="@+id/titled_textview_price"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visible="false"
+                android:visibility="gone"
                 custom:title="@string/item_sellingprice" />
 
             <!-- Description -->
@@ -76,7 +77,7 @@
                 android:id="@+id/titled_textview_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visible="false"
+                android:visibility="gone"
                 custom:title="@string/item_description" />
 
             <!-- Footer Spacing-->
@@ -90,7 +91,7 @@
     <RelativeLayout
         android:id="@+id/edit_quantity_bar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bottom_bar_height"
+        android:layout_height="0dp"
         android:layout_gravity="bottom"
         android:background="@drawable/bottom_bar">
 

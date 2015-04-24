@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 
 import de.hundebarf.fundus.collection.Item;
 import de.hundebarf.fundus.database.ServiceConnection;
+import de.hundebarf.fundus.scanner.PanelAnimation;
 import de.hundebarf.fundus.view.TitledTextView;
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -125,8 +126,10 @@ public class ItemInfoActivity extends BaseActivity {
 		OnClickListener onClickListener = new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				createNumberPickerDialog();
-			}
+                if (mItemDataAvailable) {
+                    createNumberPickerDialog();
+                }
+            }
 		};
 
 		editButton.setOnClickListener(onClickListener);
@@ -212,7 +215,6 @@ public class ItemInfoActivity extends BaseActivity {
 	}
 
 	private void fillFields(Item item) {
-        mItemDataAvailable = true;
         if (mActionBar != null) {
             mActionBar.setTitle(item.name);
         }
@@ -227,7 +229,17 @@ public class ItemInfoActivity extends BaseActivity {
         fillField(R.id.titled_textview_description, item.description);
         TextView stock = (TextView) findViewById(R.id.textview_stock);
         stock.setText(Integer.toString(item.stock));
-	}
+
+        if (!mItemDataAvailable) { // only expand once
+            RelativeLayout quantityBar = (RelativeLayout) findViewById(R.id.edit_quantity_bar);
+            int quantityBarHeight = (int) getResources().getDimension(R.dimen.bottom_bar_height);
+            PanelAnimation expandAnimation = new PanelAnimation(quantityBar, 0, quantityBarHeight);
+            expandAnimation.setDuration(500);
+            quantityBar.startAnimation(expandAnimation);
+        }
+
+        mItemDataAvailable = true;
+    }
 
     private void fillField(int id, String value) {
         TitledTextView titledTextView = (TitledTextView) findViewById(id);
