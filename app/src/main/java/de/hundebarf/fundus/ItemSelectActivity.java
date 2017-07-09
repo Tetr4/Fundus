@@ -27,8 +27,8 @@ import java.util.Set;
 import de.hundebarf.fundus.collection.Category;
 import de.hundebarf.fundus.collection.Item;
 import de.hundebarf.fundus.database.ServiceConnection;
-import de.hundebarf.fundus.scanner.OnDecodedCallback;
 import de.hundebarf.fundus.scanner.ScannerFragment;
+import de.hundebarf.fundus.scanner.OnDecodedCallback;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -171,7 +171,7 @@ public class ItemSelectActivity extends BaseActivity {
 
     private void initScanner() {
         mScannerButton = (ImageButton) findViewById(R.id.scanner_button);
-        mScannerFragment = (ScannerFragment) getFragmentManager().findFragmentById(R.id.scanner_fragment);
+        mScannerFragment = (ScannerFragment) getFragmentManager().findFragmentById(R.id.collapsible_scanner_fragment);
         mNotRecognizedToast = Toast.makeText(this, getString(R.string.not_recognized_info), Toast.LENGTH_SHORT);
 
         mScannerFragment.setOnDecodedCallback(new OnDecodedCallback() {

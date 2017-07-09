@@ -1,6 +1,5 @@
 package de.hundebarf.fundus.scanner;
 
-import android.app.Activity;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
@@ -12,23 +11,29 @@ import java.util.TimerTask;
 class Decoder implements Camera.PreviewCallback {
     private static final String TAG = Decoder.class.getSimpleName();
     private static final Long DECODE_INTERVAL = 500L;
-    private Activity mActivity;
-
-    private OnDecodedCallback mCallback;
-    private DecodeTask mDecodeTask;
-    private volatile boolean mDecoding = false;
-    private Timer mDelayTimer = new Timer();
 
     private Camera mCamera;
     private int mCameraDisplayOrientation;
     private byte[] mPreviewBuffer;
 
-    Decoder(Activity activity) {
-        mActivity = activity;
-    }
+    private volatile boolean mDecoding = false;
+    private Timer mDelayTimer = new Timer();
+
+    private OnDecodedCallback mCallback;
+    private DecodeTask mDecodeTask;
 
     void setOnDecodedCallback(OnDecodedCallback callback) {
         mCallback = callback;
+    }
+
+    private static byte[] createPreviewBuffer(Camera camera) {
+        Parameters params = camera.getParameters();
+        int width = params.getPreviewSize().width;
+        int height = params.getPreviewSize().height;
+        int bitsPerPixel = ImageFormat.getBitsPerPixel(params.getPreviewFormat());
+        int bytesPerPixel = (int) Math.ceil((float) bitsPerPixel / Byte.SIZE);
+        int bufferSize = width * height * bytesPerPixel;
+        return new byte[bufferSize];
     }
 
     void startDecoding(Camera camera, int cameraDisplayOrientation) {
@@ -50,16 +55,6 @@ class Decoder implements Camera.PreviewCallback {
         }
     }
 
-    private static byte[] createPreviewBuffer(Camera camera) {
-        Parameters params = camera.getParameters();
-        int width = params.getPreviewSize().width;
-        int height = params.getPreviewSize().height;
-        int bitsPerPixel = ImageFormat.getBitsPerPixel(params.getPreviewFormat());
-        int bytesPerPixel = (int) Math.ceil((float) bitsPerPixel / Byte.SIZE);
-        int bufferSize = width * height * bytesPerPixel;
-        return new byte[bufferSize];
-    }
-
     /*
      * Called when the camera has a buffer, e.g. by calling
      * camera.addCallbackBuffer(buffer). This buffer is automatically removed,
@@ -76,7 +71,7 @@ class Decoder implements Camera.PreviewCallback {
     }
 
     /*
-     * called by mDecodeTask
+     * Called by mDecodeTask
      */
     void onDecodeSuccess(String string) {
         Log.i(Decoder.TAG, "Decode success.");
@@ -88,7 +83,7 @@ class Decoder implements Camera.PreviewCallback {
     }
 
     /*
-     * called by mDecodeTask
+     * Called by mDecodeTask
      */
     void onDecodeFail() {
         // Log.i(Decoder.TAG, "Decode fail.");
@@ -99,24 +94,12 @@ class Decoder implements Camera.PreviewCallback {
     }
 
     private class RequestPreviewFrameTask extends TimerTask {
-
         @Override
         public void run() {
             if (mDecoding) {
-
-                final Runnable addCallBackBufferTask = new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mDecoding) {
-                            mCamera.addCallbackBuffer(mPreviewBuffer);
-                        }
-                    }
-                };
-
-                mActivity.runOnUiThread(addCallBackBufferTask);
+                // adding in other thread is okay as onPreviewFrame will be called on main thread
+                mCamera.addCallbackBuffer(mPreviewBuffer);
             }
         }
-
     }
-
 }

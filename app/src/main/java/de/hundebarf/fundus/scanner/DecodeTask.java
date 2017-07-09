@@ -17,7 +17,7 @@ class DecodeTask extends AsyncTask<byte[], Void, Result> {
     private int mCameraDisplayOrientation;
     private MultiFormatReader mMultiFormatReader = new MultiFormatReader();
 
-    public DecodeTask(Decoder decoder, Camera camera, int cameraDisplayOrientation) {
+    DecodeTask(Decoder decoder, Camera camera, int cameraDisplayOrientation) {
         mDecoder = decoder;
         mCamera = camera;
         mCameraDisplayOrientation = cameraDisplayOrientation;
@@ -48,7 +48,7 @@ class DecodeTask extends AsyncTask<byte[], Void, Result> {
     }
 
     private static Rect getBoundingRect(Camera.Size previewSize) {
-        double fraction = ScannerFragment.BOUNDS_FRACTION;
+        double fraction = ScannerView.BOUNDS_FRACTION;
         int height = (int) (previewSize.height * fraction);
         int width = (int) (previewSize.width * fraction);
         int left = (int) (previewSize.width * ((1 - fraction) / 2));

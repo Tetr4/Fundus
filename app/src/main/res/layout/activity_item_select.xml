@@ -11,7 +11,7 @@
 
     <!-- Scanner -->
     <fragment
-        android:id="@+id/scanner_fragment"
+        android:id="@+id/collapsible_scanner_fragment"
         android:name="de.hundebarf.fundus.scanner.ScannerFragment"
         android:layout_width="match_parent"
         android:layout_height="@dimen/scanner_height_collapsed" />
