@@ -24,10 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import de.hundebarf.fundus.collection.Category;
-import de.hundebarf.fundus.collection.Item;
-import de.hundebarf.fundus.database.ServiceConnection;
-import de.hundebarf.fundus.scanner.ScannerFragment;
+import de.hundebarf.fundus.model.Category;
+import de.hundebarf.fundus.model.Item;
+import de.hundebarf.fundus.service.ServiceConnection;
+import de.hundebarf.fundus.view.ScannerFragment;
+import de.hundebarf.fundus.view.ExpandableItemListAdapter;
 import de.klimek.scanner.OnDecodedCallback;
 import retrofit.Callback;
 import retrofit.RetrofitError;

@@ -1,4 +1,4 @@
-package de.hundebarf.fundus.database;
+package de.hundebarf.fundus.service;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import de.hundebarf.fundus.FundusApplication;
-import de.hundebarf.fundus.collection.FundusAccount;
+import de.hundebarf.fundus.model.FundusAccount;
 
 public class ServiceHelper {
     private static final String TAG = ServiceHelper.class.getSimpleName();

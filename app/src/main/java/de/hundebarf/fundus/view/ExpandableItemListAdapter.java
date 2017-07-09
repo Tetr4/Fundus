@@ -1,4 +1,4 @@
-package de.hundebarf.fundus;
+package de.hundebarf.fundus.view;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -11,8 +11,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
-import de.hundebarf.fundus.collection.Category;
-import de.hundebarf.fundus.collection.Item;
+import de.hundebarf.fundus.R;
+import de.hundebarf.fundus.model.Category;
+import de.hundebarf.fundus.model.Item;
 
 public class ExpandableItemListAdapter extends BaseExpandableListAdapter {
 	private Activity mContext;

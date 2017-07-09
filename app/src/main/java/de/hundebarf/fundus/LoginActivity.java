@@ -12,8 +12,8 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
-import de.hundebarf.fundus.collection.FundusAccount;
-import de.hundebarf.fundus.database.ServiceConnection;
+import de.hundebarf.fundus.model.FundusAccount;
+import de.hundebarf.fundus.service.ServiceConnection;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;

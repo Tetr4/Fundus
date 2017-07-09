@@ -1,4 +1,4 @@
-package de.hundebarf.fundus.scanner;
+package de.hundebarf.fundus.view;
 
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;

@@ -1,4 +1,4 @@
-package de.hundebarf.fundus.scanner;
+package de.hundebarf.fundus.view;
 
 import android.app.Fragment;
 import android.os.Bundle;

@@ -19,9 +19,9 @@ import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import de.hundebarf.fundus.collection.FundusAccount;
-import de.hundebarf.fundus.database.ServiceConnection;
-import de.hundebarf.fundus.database.ServiceHelper;
+import de.hundebarf.fundus.model.FundusAccount;
+import de.hundebarf.fundus.service.ServiceConnection;
+import de.hundebarf.fundus.service.ServiceHelper;
 import retrofit.Endpoint;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;

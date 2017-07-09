@@ -1,8 +1,8 @@
-package de.hundebarf.fundus.database;
+package de.hundebarf.fundus.service;
 
 import java.util.List;
 
-import de.hundebarf.fundus.collection.Item;
+import de.hundebarf.fundus.model.Item;
 import retrofit.Callback;
 import retrofit.client.Response;
 import retrofit.http.Body;

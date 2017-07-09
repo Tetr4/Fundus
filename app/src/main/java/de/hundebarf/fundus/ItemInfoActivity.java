@@ -19,9 +19,9 @@ import android.widget.TextView;
 
 import java.lang.reflect.Field;
 
-import de.hundebarf.fundus.collection.Item;
-import de.hundebarf.fundus.database.ServiceConnection;
-import de.hundebarf.fundus.scanner.PanelAnimation;
+import de.hundebarf.fundus.model.Item;
+import de.hundebarf.fundus.service.ServiceConnection;
+import de.hundebarf.fundus.view.PanelAnimation;
 import de.hundebarf.fundus.view.TitledTextView;
 import retrofit.Callback;
 import retrofit.RetrofitError;

@@ -1,4 +1,4 @@
-package de.hundebarf.fundus.collection;
+package de.hundebarf.fundus.model;
 
 public class FundusAccount {
 	private String mUser;

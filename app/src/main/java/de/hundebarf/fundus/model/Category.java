@@ -1,4 +1,4 @@
-package de.hundebarf.fundus.collection;
+package de.hundebarf.fundus.model;
 
 import java.util.ArrayList;
 
