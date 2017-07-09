@@ -27,7 +27,6 @@ public class ScannerFragment extends Fragment {
 	private static final String TAG = ScannerFragment.class.getSimpleName();
 
 	static final double BOUNDS_FRACTION = 0.6;
-	static final double VERTICAL_HEIGHT_FRACTION = 0.3;
 
 	private FrameLayout mScannerPanel;
 	private ScannerView mScannerView;
@@ -35,7 +34,7 @@ public class ScannerFragment extends Fragment {
 
 	private Camera mCamera;
 	private int mCameraId;
-	private CameraInfo mCameraInfo;
+	private CameraInfo mCameraInfo = new CameraInfo();
 	private AsyncTask<Void, Void, Exception> mStartCameraTask;
 
 	private Decoder mDecoder;
@@ -49,28 +48,25 @@ public class ScannerFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		initCamera();
+        mCameraId = selectCamera();
+        Camera.getCameraInfo(mCameraId, mCameraInfo);
 		mDecoder = new Decoder(getActivity());
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fragment_scanner, container,
-				false);
-
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View rootView = inflater.inflate(R.layout.fragment_scanner, container, false);
 		mScannerPanel = (FrameLayout) rootView.findViewById(R.id.scanner_panel);
 		mScannerView = (ScannerView) rootView.findViewById(R.id.scanner_view);
-		mTargetReticle = (TargetReticle) rootView
-				.findViewById(R.id.target_reticle);
+		mTargetReticle = (TargetReticle) rootView.findViewById(R.id.target_reticle);
 
 		initPanelAnimations();
 
 		return rootView;
 	}
 
-	private void initCamera() {
-		mCameraInfo = new CameraInfo();
+	protected int selectCamera() {
+        CameraInfo cameraInfo = new CameraInfo();
 
 		/*
 		 * Barcodes will be blurry and thus unreadably on the back camera,
@@ -79,45 +75,37 @@ public class ScannerFragment extends Fragment {
 		 * focus.
 		 */
 		PackageManager packageManager = getActivity().getPackageManager();
-		boolean hasAutoFocus = packageManager
-				.hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS);
-		boolean hasFrontCamera = packageManager
-				.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT);
+		boolean hasAutoFocus = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS);
+		boolean hasFrontCamera = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT);
 		if (!hasAutoFocus && hasFrontCamera) {
 			// use front camera
 			for (int curCameraId = 0; curCameraId < Camera.getNumberOfCameras(); curCameraId++) {
-				Camera.getCameraInfo(curCameraId, mCameraInfo);
-				if (mCameraInfo.facing == CameraInfo.CAMERA_FACING_FRONT) {
-					mCameraId = curCameraId;
-					return;
+				Camera.getCameraInfo(curCameraId, cameraInfo);
+				if (cameraInfo.facing == CameraInfo.CAMERA_FACING_FRONT) {
+                    return curCameraId;
 				}
 			}
 		}
 
-		// use default camera;
-		mCameraId = 0;
-		Camera.getCameraInfo(mCameraId, mCameraInfo);
-	}
+        // use default camera;
+        return 0;
+    }
 
 	private void initPanelAnimations() {
-		mScannerHeightExpanded = (int) getResources().getDimension(
-				R.dimen.scanner_height_expanded);
-		mScannerHeightCollapsed = (int) getResources().getDimension(
-				R.dimen.scanner_height_collapsed);
+		mScannerHeightExpanded = (int) getResources().getDimension(R.dimen.scanner_height_expanded);
+		mScannerHeightCollapsed = (int) getResources().getDimension(R.dimen.scanner_height_collapsed);
 
 		// expand animation
-		mExpandAnimation = new PanelAnimation(mScannerPanel,
-				mScannerHeightCollapsed, mScannerHeightExpanded);
+		mExpandAnimation = new PanelAnimation(mScannerPanel, mScannerHeightCollapsed, mScannerHeightExpanded);
 		mExpandAnimation.setDuration(200);
 		mExpandAnimation.setAnimationListener(new AnimationListener() {
 			@Override
 			public void onAnimationStart(Animation animation) {
-				startCameraAsync();
+				startCamera();
 			}
 
 			@Override
-			public void onAnimationRepeat(Animation animation) {
-			}
+			public void onAnimationRepeat(Animation animation) { }
 
 			@Override
 			public void onAnimationEnd(Animation animation) {
@@ -126,13 +114,10 @@ public class ScannerFragment extends Fragment {
 		});
 
 		// collapse animation
-		mCollapseAnimation = new PanelAnimation(mScannerPanel,
-				mScannerHeightExpanded, mScannerHeightCollapsed);
+		mCollapseAnimation = new PanelAnimation(mScannerPanel, mScannerHeightExpanded, mScannerHeightCollapsed);
 		mCollapseAnimation.setDuration(200);
 		mCollapseAnimation.setAnimationListener(new AnimationListener() {
-			public void onAnimationStart(Animation animation) {
-
-			}
+			public void onAnimationStart(Animation animation) {	}
 
 			@Override
 			public void onAnimationRepeat(Animation animation) {
@@ -144,15 +129,15 @@ public class ScannerFragment extends Fragment {
 				stopCamera();
 				mExpanded = false;
 			}
-
 		});
 	}
 
+    // FIXME not called when flipping from landscape to reverse landscape
 	@Override
 	public void onResume() {
 		super.onResume();
 		if (mExpanded) {
-			startCameraAsync();
+            startCamera();
 		}
 	}
 
@@ -162,14 +147,14 @@ public class ScannerFragment extends Fragment {
 		stopCamera();
 	}
 
+	// FIXME not called when flipping from landscape to reverse landscape
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		// called when display is rotated
+		super.onConfigurationChanged(newConfig);
 		if (mCamera != null) {
-			Display display = getActivity().getWindowManager()
-					.getDefaultDisplay();
-			int displayOrientation = getCameraDisplayOrientation(display,
-					mCameraInfo);
+            Display display = getActivity().getWindowManager().getDefaultDisplay();
+            int displayOrientation = getCameraDisplayOrientation(display, mCameraInfo);
 			mCamera.setDisplayOrientation(displayOrientation);
 			mScannerView.stopPreview();
 			mScannerView.startPreview(mCamera, displayOrientation);
@@ -178,10 +163,9 @@ public class ScannerFragment extends Fragment {
 		}
 	}
 
-	private void startCameraAsync() {
+	protected final void startCamera() {
 		// Task for smooth UI while camera loads
 		mStartCameraTask = new AsyncTask<Void, Void, Exception>() {
-
 			@Override
 			protected Exception doInBackground(Void... v) {
 				try {
@@ -197,17 +181,13 @@ public class ScannerFragment extends Fragment {
 			@Override
 			protected void onPostExecute(Exception e) {
 				if (e != null) {
-					Log.w(TAG,
-							"Exception while opening camera: " + e.getMessage());
+					Log.w(TAG, "Exception while opening camera: " + e.getMessage());
 					mCamera = null;
 					collapseNoAnim();
 					return;
 				}
-				
-				Display display = getActivity().getWindowManager()
-						.getDefaultDisplay();
-				int displayOrientation = getCameraDisplayOrientation(display,
-						mCameraInfo);
+				Display display = getActivity().getWindowManager().getDefaultDisplay();
+				int displayOrientation = getCameraDisplayOrientation(display, mCameraInfo);
 				mCamera.setDisplayOrientation(displayOrientation);
 				mScannerView.startPreview(mCamera, displayOrientation);
 				mDecoder.startDecoding(mCamera, displayOrientation);
@@ -217,7 +197,7 @@ public class ScannerFragment extends Fragment {
 		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
-	private void stopCamera() {
+    protected final void stopCamera() {
 		if (mStartCameraTask != null) {
 			mStartCameraTask.cancel(true);
 		}
@@ -231,7 +211,7 @@ public class ScannerFragment extends Fragment {
 		mTargetReticle.setVisibility(View.INVISIBLE);
 	}
 
-	private static void optimizeCameraParams(Camera camera) {
+	protected void optimizeCameraParams(Camera camera) {
 		Parameters params = camera.getParameters();
 		List<String> focusModes = params.getSupportedFocusModes();
 		if (focusModes.contains(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
@@ -246,8 +226,7 @@ public class ScannerFragment extends Fragment {
 		camera.setParameters(params);
 	}
 
-	private static int getCameraDisplayOrientation(Display display,
-			CameraInfo cameraInfo) {
+	private static int getCameraDisplayOrientation(Display display, CameraInfo cameraInfo) {
 		int rotation = display.getRotation();
 		int degrees = 0;
 		switch (rotation) {
