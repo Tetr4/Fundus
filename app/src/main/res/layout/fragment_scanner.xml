@@ -12,7 +12,7 @@
         android:paddingLeft="@dimen/scanner_border"
         android:paddingRight="@dimen/scanner_border" >
 
-        <de.hundebarf.fundus.scanner.ScannerView
+        <de.hundebarf.fundus.scanner.CameraPreview
             android:id="@+id/scanner_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

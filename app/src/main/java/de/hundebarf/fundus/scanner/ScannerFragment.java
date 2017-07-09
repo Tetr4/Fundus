@@ -29,7 +29,7 @@ public class ScannerFragment extends Fragment {
 	static final double BOUNDS_FRACTION = 0.6;
 
 	private FrameLayout mScannerPanel;
-	private ScannerView mScannerView;
+	private CameraPreview mCameraPreview;
 	private TargetReticle mTargetReticle;
 
 	private Camera mCamera;
@@ -57,7 +57,7 @@ public class ScannerFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_scanner, container, false);
 		mScannerPanel = (FrameLayout) rootView.findViewById(R.id.scanner_panel);
-		mScannerView = (ScannerView) rootView.findViewById(R.id.scanner_view);
+		mCameraPreview = (CameraPreview) rootView.findViewById(R.id.scanner_view);
 		mTargetReticle = (TargetReticle) rootView.findViewById(R.id.target_reticle);
 
 		initPanelAnimations();
@@ -156,8 +156,8 @@ public class ScannerFragment extends Fragment {
             Display display = getActivity().getWindowManager().getDefaultDisplay();
             int displayOrientation = getCameraDisplayOrientation(display, mCameraInfo);
 			mCamera.setDisplayOrientation(displayOrientation);
-			mScannerView.stopPreview();
-			mScannerView.startPreview(mCamera, displayOrientation);
+			mCameraPreview.stopPreview();
+			mCameraPreview.startPreview(mCamera, displayOrientation);
 			mDecoder.stopDecoding();
 			mDecoder.startDecoding(mCamera, displayOrientation);
 		}
@@ -189,9 +189,9 @@ public class ScannerFragment extends Fragment {
 				Display display = getActivity().getWindowManager().getDefaultDisplay();
 				int displayOrientation = getCameraDisplayOrientation(display, mCameraInfo);
 				mCamera.setDisplayOrientation(displayOrientation);
-				mScannerView.startPreview(mCamera, displayOrientation);
+				mCameraPreview.startPreview(mCamera, displayOrientation);
 				mDecoder.startDecoding(mCamera, displayOrientation);
-				mScannerView.setVisibility(View.VISIBLE);
+				mCameraPreview.setVisibility(View.VISIBLE);
 				mTargetReticle.setVisibility(View.VISIBLE);
 			}
 		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -203,11 +203,11 @@ public class ScannerFragment extends Fragment {
 		}
 		if (mCamera != null) {
 			mDecoder.stopDecoding();
-			mScannerView.stopPreview();
+			mCameraPreview.stopPreview();
 			mCamera.release();
 			mCamera = null;
 		}
-		mScannerView.setVisibility(View.INVISIBLE);
+		mCameraPreview.setVisibility(View.INVISIBLE);
 		mTargetReticle.setVisibility(View.INVISIBLE);
 	}
 
@@ -272,7 +272,7 @@ public class ScannerFragment extends Fragment {
 		LayoutParams lp = mScannerPanel.getLayoutParams();
 		lp.height = mScannerHeightCollapsed;
 		mExpanded = false;
-		mScannerView.setVisibility(View.INVISIBLE);
+		mCameraPreview.setVisibility(View.INVISIBLE);
 		mTargetReticle.setVisibility(View.INVISIBLE);
 	}
 

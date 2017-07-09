@@ -9,8 +9,8 @@ import android.view.SurfaceView;
 
 import java.io.IOException;
 
-public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
-	public static final String TAG = ScannerView.class.getSimpleName();
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+	public static final String TAG = CameraPreview.class.getSimpleName();
 
 	private SurfaceHolder mHolder;
 	boolean mSurfaceCreated = false;
@@ -19,7 +19,7 @@ public class ScannerView extends SurfaceView implements SurfaceHolder.Callback {
 	private Size mPreviewSize;
 	private int mDisplayOrientation;
 
-	public ScannerView(Context context, AttributeSet attrs) {
+	public CameraPreview(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		mHolder = getHolder();
 		mHolder.addCallback(this);
