@@ -22,7 +22,6 @@ import android.widget.FrameLayout;
 import java.util.List;
 
 import de.hundebarf.fundus.R;
-import de.hundebarf.fundus.scanner.Decoder.OnDecodedCallback;
 
 public class ScannerFragment extends Fragment {
 	private static final String TAG = ScannerFragment.class.getSimpleName();

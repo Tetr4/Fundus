@@ -9,7 +9,7 @@ import android.util.Log;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class Decoder implements Camera.PreviewCallback {
+class Decoder implements Camera.PreviewCallback {
     private static final String TAG = Decoder.class.getSimpleName();
     private static final Long DECODE_INTERVAL = 500L;
     private Activity mActivity;
@@ -119,7 +119,4 @@ public class Decoder implements Camera.PreviewCallback {
 
     }
 
-    public interface OnDecodedCallback {
-        void onDecoded(String decodedData);
-    }
 }

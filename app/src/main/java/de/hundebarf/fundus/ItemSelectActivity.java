@@ -27,7 +27,7 @@ import java.util.Set;
 import de.hundebarf.fundus.collection.Category;
 import de.hundebarf.fundus.collection.Item;
 import de.hundebarf.fundus.database.ServiceConnection;
-import de.hundebarf.fundus.scanner.Decoder.OnDecodedCallback;
+import de.hundebarf.fundus.scanner.OnDecodedCallback;
 import de.hundebarf.fundus.scanner.ScannerFragment;
 import retrofit.Callback;
 import retrofit.RetrofitError;
