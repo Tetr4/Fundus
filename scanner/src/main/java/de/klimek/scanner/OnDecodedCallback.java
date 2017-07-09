@@ -1,4 +1,4 @@
-package de.hundebarf.fundus.scanner;
+package de.klimek.scanner;
 
 public interface OnDecodedCallback {
     void onDecoded(String decodedData);

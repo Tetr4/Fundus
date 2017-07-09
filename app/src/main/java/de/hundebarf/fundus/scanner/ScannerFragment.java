@@ -9,6 +9,8 @@ import android.view.animation.Animation;
 import android.widget.FrameLayout;
 
 import de.hundebarf.fundus.R;
+import de.klimek.scanner.OnDecodedCallback;
+import de.klimek.scanner.ScannerView;
 
 /**
  * Collapsible fragment, which starts/stops the scanner after expanding/collapsing.

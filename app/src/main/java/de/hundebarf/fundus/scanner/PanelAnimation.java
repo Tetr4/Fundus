@@ -17,8 +17,7 @@ public class PanelAnimation extends Animation {
     }
 
     @Override
-    protected void applyTransformation(float interpolatedTime,
-                                       Transformation t) {
+    protected void applyTransformation(float interpolatedTime, Transformation t) {
         // TODO maybe scrollX instead of height
         LayoutParams lp = mView.getLayoutParams();
         lp.height = (int) (mStartHeight + mDeltaHeight * interpolatedTime);

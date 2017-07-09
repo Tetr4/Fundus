@@ -28,7 +28,7 @@ import de.hundebarf.fundus.collection.Category;
 import de.hundebarf.fundus.collection.Item;
 import de.hundebarf.fundus.database.ServiceConnection;
 import de.hundebarf.fundus.scanner.ScannerFragment;
-import de.hundebarf.fundus.scanner.OnDecodedCallback;
+import de.klimek.scanner.OnDecodedCallback;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;

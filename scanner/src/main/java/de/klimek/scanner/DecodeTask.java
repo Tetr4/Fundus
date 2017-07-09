@@ -1,4 +1,4 @@
-package de.hundebarf.fundus.scanner;
+package de.klimek.scanner;
 
 import android.graphics.Rect;
 import android.hardware.Camera;
