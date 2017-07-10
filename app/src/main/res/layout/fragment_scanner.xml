@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/panel"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/scanner_background" >
+    android:background="@drawable/scanner_background">
 
     <de.klimek.scanner.ScannerView
         android:id="@+id/scanner"
@@ -11,13 +12,17 @@
         android:layout_height="match_parent"
         android:paddingBottom="@dimen/scanner_border"
         android:paddingLeft="@dimen/scanner_border"
-        android:paddingRight="@dimen/scanner_border"/>
+        android:paddingRight="@dimen/scanner_border"
+        app:allow_frontcamera="true"
+        app:decode_interval="500"
+        app:reticle_fraction="1.0"
+        app:use_flash="true"
+        app:reticle_color="@color/fundus_green" />
 
     <!-- draw border over scannerview -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/scanner_border" >
-    </FrameLayout>
+        android:background="@drawable/scanner_border" />
 
 </FrameLayout>
